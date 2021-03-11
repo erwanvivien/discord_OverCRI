@@ -17,6 +17,7 @@ import random
 
 LOG_FILE = "db/log"
 
+forbiden_slugs = []
 
 BOT_IDS = []
 DEV_IDS = [289145021922279425]
@@ -54,6 +55,7 @@ def log(fctname, error, message):
 
 
 async def get_group_random(self, message, args):
+    global forbiden_slugs
     group_slug = ""
     if not args:
         groups = cri.all_groups()
@@ -67,13 +69,17 @@ async def get_group_random(self, message, args):
     else:
         group_slug = args[0]
 
+    if group_slug in forbiden_slugs:
+        return await get_group_random(self, message, args)
+
     group_members = cri.members_group(group_slug)
     if "detail" in group_members:
         return await disc.send_message(message, title=groups["detail"], desc="")
 
     if not group_members:
-        await get_group_random(self, message, args)
-        return
+        print(group_slug)
+        forbiden_slugs += [group_slug]
+        return await get_group_random(self, message, args)
 
     member = random.choices(group_members)
     member = member[0]
