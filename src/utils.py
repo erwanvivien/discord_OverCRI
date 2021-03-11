@@ -58,11 +58,23 @@ async def get_group_random(self, message, args):
 async def get_login(self, message, args):
     if not args:
         return await disc.error_message(message,
-                                        title="Bad usage", desc="Not arguments were given")
+                                        title="Bad usage", desc="Not login were given")
     users = cri.search_login(args[0])
-    for u in users:
-        print(u)
-        print()
+    if "detail" in users:
+        return await disc.send_message(message, title=users["detail"], desc="")
+
+    fname = users["first_name"]
+    sname = users["last_name"]
+    login = users["login"]
+    image = f"https://photos.cri.epita.fr/thumb/{login}"
+
+    year = 2023
+    for u in users["groups_history"]:
+        if u["is_current"]:
+            year = u["graduation_year"]
+
+    await message.channel.send(image)
+    await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
 
 async def get_random(self, message, args):
