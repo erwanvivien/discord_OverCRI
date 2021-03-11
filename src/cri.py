@@ -22,7 +22,6 @@ epita_username = get_content("epita_user")
 epita_password = get_content("epita_pass")
 
 user_pass = f"{epita_username}:{epita_password}".encode('utf-8')
-
 base64auth = base64.b64encode(user_pass).decode('utf-8')
 
 auth = {
@@ -120,6 +119,5 @@ def search_user(logins=None, uids=None, emails=None, firstnames=None,
 
 
 def search_login(login):
-    r = requests.post(f"{base_url}/users/{login}/", headers=auth)
-    print(r.text)
+    r = requests.get(f"{base_url}/users/{login}/", headers=auth)
     return r.json()
