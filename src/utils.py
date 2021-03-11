@@ -113,9 +113,20 @@ async def get_random(self, message, args):
     pass
 
 
+async def fart(self, message, args):
+    await disc.send_file(message, "assets/reverbed_fart.mp3")
+    await message.delete()
+
+
+async def poop(self, message, args):
+    await disc.send_file(message, "assets/poop.png")
+    await message.delete()
+
+
 async def search(self, message, cmd, args):
     # Contains the commands inside the args
     pass
+
 
 if not os.path.exists("db"):
     os.mkdir("db")
