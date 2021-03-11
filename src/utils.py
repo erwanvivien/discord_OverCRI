@@ -54,10 +54,6 @@ def log(fctname, error, message):
 
 
 async def get_group_random(self, message, args):
-    if not args:
-        return await disc.error_message(message,
-                                        title="Bad usage", desc="No gradu were given")
-
     group_slug = ""
     if not args:
         groups = cri.all_groups()
@@ -65,6 +61,8 @@ async def get_group_random(self, message, args):
             return await disc.send_message(message, title=groups["detail"], desc="")
 
         group = random.choices(groups)
+        group = group[0]
+
         group_slug = group["slug"]
     else:
         group_slug = args[0]
@@ -73,14 +71,15 @@ async def get_group_random(self, message, args):
     if "detail" in group_members:
         return await disc.send_message(message, title=groups["detail"], desc="")
 
-    member = random.choices(group_members)[0]
+    member = random.choices(group_members)
+    member = member[0]
 
     login = member["login"]
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
     await message.channel.send(image)
     if not args:
-        await message.channel.send(f"`Group {group_slug}`")
+        await message.channel.send(f"`Login: {login}`\n`Group: {group_slug}`")
 
 
 async def get_login(self, message, args):

@@ -47,7 +47,8 @@ def specific_campus(slug):
 
 
 def all_groups():
-    r = requests.get(f"{base_url}/groups/", headers=auth)
+    r = requests.get(
+        f"{base_url}/groups/?kind=semester&private=false", headers=auth)
     return r.json()
 
 
