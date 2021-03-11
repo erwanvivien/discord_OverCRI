@@ -13,6 +13,8 @@ import discord_utils as disc
 # Own wrapper around CRI API
 import cri
 
+import random
+
 LOG_FILE = "db/log"
 
 
@@ -52,13 +54,40 @@ def log(fctname, error, message):
 
 
 async def get_group_random(self, message, args):
-    pass
+    if not args:
+        return await disc.error_message(message,
+                                        title="Bad usage", desc="No gradu were given")
+
+    group_slug = ""
+    if not args:
+        groups = cri.all_groups()
+        if "detail" in groups:
+            return await disc.send_message(message, title=groups["detail"], desc="")
+
+        group = random.choices(groups)
+        group_slug = group["slug"]
+    else:
+        group_slug = args[0]
+
+    group_members = cri.members_group(group_slug)
+    if "detail" in group_members:
+        return await disc.send_message(message, title=groups["detail"], desc="")
+
+    member = random.choices(group_members)[0]
+
+    login = member["login"]
+    image = f"https://photos.cri.epita.fr/thumb/{login}"
+
+    await message.channel.send(image)
+    if not args:
+        await message.channel.send(f"`Group {group_slug}`")
 
 
 async def get_login(self, message, args):
     if not args:
         return await disc.error_message(message,
                                         title="Bad usage", desc="No login were given")
+
     users = cri.search_login(args[0])
     if "detail" in users:
         return await disc.send_message(message, title=users["detail"], desc="")
