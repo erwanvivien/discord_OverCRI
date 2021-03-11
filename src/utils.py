@@ -58,7 +58,7 @@ async def get_group_random(self, message, args):
 async def get_login(self, message, args):
     if not args:
         return await disc.error_message(message,
-                                        title="Bad usage", desc="Not login were given")
+                                        title="Bad usage", desc="No login were given")
     users = cri.search_login(args[0])
     if "detail" in users:
         return await disc.send_message(message, title=users["detail"], desc="")
