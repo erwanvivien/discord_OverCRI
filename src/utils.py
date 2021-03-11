@@ -71,6 +71,10 @@ async def get_group_random(self, message, args):
     if "detail" in group_members:
         return await disc.send_message(message, title=groups["detail"], desc="")
 
+    if not group_members:
+        await get_group_random(self, message, args)
+        return
+
     member = random.choices(group_members)
     member = member[0]
 
