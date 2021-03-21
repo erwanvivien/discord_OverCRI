@@ -77,7 +77,6 @@ async def get_group_random(self, message, args):
         return await disc.send_message(message, title=groups["detail"], desc="")
 
     if not group_members:
-        print(group_slug)
         forbiden_slugs += [group_slug]
         return await get_group_random(self, message, args)
 
