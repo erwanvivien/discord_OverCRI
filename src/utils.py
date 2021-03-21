@@ -137,16 +137,6 @@ async def get_random(self, message, args):
     await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
 
-async def fart(self, message, args):
-    await disc.send_file(message, "assets/reverbed_fart.mp3")
-    await message.delete()
-
-
-async def poop(self, message, args):
-    await disc.send_file(message, "assets/poop.png")
-    await message.delete()
-
-
 async def search(self, message, args):
     # No args
     if not args:
@@ -160,6 +150,50 @@ async def search(self, message, args):
             return await message.delete()
 
     # Else we parse the Database of logins
+
+
+async def map(self, message, args):
+    if not message.attachments:
+        return await disc.error_message(message, desc="Please provide an file as attachement")
+    if not args:
+        return await disc.error_message(message, desc="Please provide a name to this file")
+
+    bind_to = args[0]
+
+    if bind_to == '--force':
+        return await disc.error_message(message, desc="Please provide a name different from --force")
+    if bind_to in CMD_MAP and not "--force" in args:
+        return await disc.error_message(message, title="This mapping already exists", desc="pass --force to overwrite this file")
+
+    msg = await disc.send_message(message, title="Starting to download", desc="")
+
+    if bind_to in CMD_MAP:
+        os.remove(CMD_MAP[bind_to])
+
+    # attach_id = message.attachments[0].id # Unsued ID
+    attach_name = message.attachments[0].filename
+    attach_url = message.attachments[0].url
+
+    extension = attach_name.split('.')[-1]
+
+    response = requests.get(attach_url)
+
+    filename = f"assets/{bind_to}.{extension}"
+
+    file = open(filename, "wb")
+    file.write(response.content)
+    file.close()
+
+    CMD_MAP[bind_to] = filename
+
+    tmp_map = [f"{k}: {v}" for k, v in CMD_MAP.items()]
+    new_cmd_map = "\n".join(tmp_map)
+
+    file = open("CMD_MAP", "w")
+    file.write(new_cmd_map)
+    file.close()
+
+    await disc.edit_message(msg, title="Success !", desc=f"The file {attach_name} has been bound to {bind_to}")
 
 
 if not os.path.exists("db"):

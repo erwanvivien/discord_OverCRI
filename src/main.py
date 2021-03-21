@@ -17,6 +17,7 @@ CMDS = {
     "!!login": utils.get_login,
     "!!random": utils.get_random,
     "!!": utils.search,
+    "!!map": utils.map,
 }
 
 
