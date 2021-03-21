@@ -6,6 +6,11 @@ import json
 # base64 encoding
 import base64
 
+ALL_LOGINS = [["erwan", "vivien"], ["hugo", "bois"],
+              ["christophe", "terreaux"], ["vahan", "boghossian"],
+              ["philippe", "lefebvre"], ["charlie", "brosse"],
+              ["david", "horozian"], ["hugo", "houri"], ["zacharie", "constans"]]
+
 
 def get_content(file):
     # Read file content
@@ -122,3 +127,21 @@ def search_user(logins=None, uids=None, emails=None, firstnames=None,
 def search_login(login):
     r = requests.get(f"{base_url}/users/{login}/", headers=auth)
     return r.json()
+
+
+def get_all_users():
+    prepa_people = members_group("prepa")
+    ing_people = members_group("ing")
+
+    all_people = prepa_people + ing_people
+
+    logins = []
+    for e in all_people:
+        log = e["login"].split('.')
+        if len(log) == 2:
+            logins.append(log)
+
+    global ALL_LOGINS
+    ALL_LOGINS = logins
+
+    return prepa_people + ing_people
