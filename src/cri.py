@@ -23,12 +23,15 @@ def get_content(file):
     return s
 
 
+# My cri.epita.fr credentials
 epita_username = get_content("epita_user")
 epita_password = get_content("epita_pass")
 
+# Basic Auth
 user_pass = f"{epita_username}:{epita_password}".encode('utf-8')
 base64auth = base64.b64encode(user_pass).decode('utf-8')
 
+# Basic Auth Header
 auth = {
     "Authorization": f"Basic {base64auth}",
     "accept": "application/json",
@@ -141,7 +144,9 @@ def get_all_users():
         if len(log) == 2:
             logins.append(log)
 
+    # Update the global var that stocks the names
     global ALL_LOGINS
     ALL_LOGINS = logins
 
+    # Returns the json if needed
     return prepa_people + ing_people

@@ -148,13 +148,19 @@ async def poop(self, message, args):
 
 
 async def search(self, message, args):
+    # No args
     if not args:
         return await disc.error_message(
             message, desc="Please provide at least one arg after !! command")
+
+    # One args probably means it an instant reply with file
     if len(args) == 1:
         if args[0] in CMD_MAP:
             await disc.send_file(message, CMD_MAP[args[0]])
             return await message.delete()
+
+    # Else we parse the Database of logins
+
 
 if not os.path.exists("db"):
     os.mkdir("db")
