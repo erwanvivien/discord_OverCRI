@@ -3,6 +3,7 @@ from discord.ext import commands
 import datetime
 
 import discord_utils as disc
+import cri
 import utils
 
 ERRORS = []
@@ -16,9 +17,10 @@ CMDS = {
     "!!login": utils.get_login,
     "!!random": utils.get_random,
     "!!": utils.search,
-    "!!poop": utils.poop,
-    "!!fart": utils.fart,
 }
+
+
+# cri.get_all_users()
 
 
 class Client(discord.Client):
@@ -48,9 +50,10 @@ class Client(discord.Client):
 
             await CMDS[cmd](self, message, args)
         elif cmd.startswith("!!"):
+            args = [cmd[2:]] + args
             utils.log("on_message", "Command execution",
-                      f"{name} from discord {message.guild.id} issued {cmd} command. <{args}>")
-            await CMDS['!!'](self, message, cmd, args)
+                      f"{name} from discord {message.guild.id} issued !! command. <{args}>")
+            await CMDS['!!'](self, message, args)
 
 
 client = Client()
