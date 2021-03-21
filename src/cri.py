@@ -5,6 +5,8 @@ import json
 
 # base64 encoding
 import base64
+from unidecode import unidecode
+
 
 ALL_LOGINS = [["erwan", "vivien"], ["hugo", "bois"],
               ["christophe", "terreaux"], ["vahan", "boghossian"],
@@ -140,9 +142,12 @@ def get_all_users():
 
     logins = []
     for e in all_people:
-        log = e["login"].split('.')
-        if len(log) == 2:
-            logins.append(log)
+        # remove all accents
+        login = unidecode(e["login"])
+        # split in First/Last name
+        login = login.split('.')
+        if len(login) == 2:
+            logins.append(login)
 
     # Update the global var that stocks the names
     global ALL_LOGINS
