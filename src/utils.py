@@ -105,17 +105,31 @@ async def get_login(self, message, args):
     login = users["login"]
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
-    year = 2023
-    for u in users["groups_history"]:
-        if u["is_current"]:
-            year = u["graduation_year"]
+    year = int(datetime.datetime.now().year / 100) * 100
+    year += int(users["uid"] / 1000)
 
     await message.channel.send(image)
     await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
 
 async def get_random(self, message, args):
-    pass
+    rdm = random.choices(cri.ALL_LOGINS)[0]
+
+    login = ".".join(rdm)
+    image = f"https://photos.cri.epita.fr/thumb/{login}"
+
+    users = cri.search_login(login)
+
+    fname = users["first_name"]
+    sname = users["last_name"]
+    login = users["login"]
+    image = f"https://photos.cri.epita.fr/thumb/{login}"
+
+    year = int(datetime.datetime.now().year / 100) * 100
+    year += int(users["uid"] / 1000)
+
+    await message.channel.send(image)
+    await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
 
 async def fart(self, message, args):
