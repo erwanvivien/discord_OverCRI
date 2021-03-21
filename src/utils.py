@@ -54,6 +54,11 @@ def log(fctname, error, message):
     f.close()
 
 
+CMD_FILE_CONTENT = get_content("CMD_MAP").split('\n')
+CMD_MAP = {line.split(": ")[0]: line.split(": ")[1]
+           for line in CMD_FILE_CONTENT if line}
+
+
 async def get_group_random(self, message, args):
     global forbiden_slugs
     group_slug = ""
@@ -142,10 +147,14 @@ async def poop(self, message, args):
     await message.delete()
 
 
-async def search(self, message, cmd, args):
-    # Contains the commands inside the args
-    pass
-
+async def search(self, message, args):
+    if not args:
+        return await disc.error_message(
+            message, desc="Please provide at least one arg after !! command")
+    if len(args) == 1:
+        if args[0] in CMD_MAP:
+            await disc.send_file(message, CMD_MAP[args[0]])
+            return await message.delete()
 
 if not os.path.exists("db"):
     os.mkdir("db")
