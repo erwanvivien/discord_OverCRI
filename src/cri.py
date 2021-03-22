@@ -14,6 +14,59 @@ ALL_LOGINS = [["erwan", "vivien"], ["hugo", "bois"],
               ["david", "horozian"], ["hugo", "houri"], ["zacharie", "constans"]]
 ALL_USERS = []
 
+GROUP_SLUGS = {
+    # Sup
+    "s1": "prepa-sup-s1",
+    "s1#": "prepa-sup-s1s",
+    "s2": "prepa-sup-s2",
+    "s2#": "prepa-sup-s2s",
+
+    # Spe
+    "s3": "prepa-spe-s3",
+    "s3#": "prepa-spe-s3s",
+    "s4": "prepa-spe-s4",
+
+    # Ing
+    "s5":  "ing-ing1-s5",
+    "s6":  "ing-ing1-s6",
+    "s7":  "ing-ing2-s7",
+    "s8":  "ing-ing2-s8",
+    "s9":  "ing-ing3-s9",
+    "s10": "ing-ing3-s10",
+
+    # Promos
+    "spe": "prepa-spe",
+    "sup": "prepa-sup",
+    "ing1": "ing-ing1",
+    "ing2": "ing-ing2",
+    "ing3": "ing-ing3",
+
+    # Labos
+    "3ie":  "labo-3ie",
+    "lrde": "labo-lrde",
+    "lse":  "labo-lse",
+    "seal": "labo-seal",
+
+    # Departments
+    "de": "ing-de",
+    "scola": "ing-scolarite",
+    "scolarite": "ing-scolarite",
+
+    # Campuses
+    "lyon": "lyn",
+    "paris": "prs",
+    "rennes": "rns",
+    "strasbourd": "stg",
+    "toulouse": "tls",
+
+    # Assistants
+    "acdc": "prepa-assistants-acdc",
+    "acu": "ing-assistants-acu",
+    "asm": "prepa-assistants-asm",
+    "yaka": "prepa-assistants-yaka",
+    "assistants": "ing-assistants",
+}
+
 
 def get_content(file):
     # Read file content
