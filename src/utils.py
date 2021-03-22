@@ -15,6 +15,8 @@ import cri
 
 import random
 
+from jaro import jaro_Winkler
+
 LOG_FILE = "db/log"
 
 forbiden_slugs = []
@@ -231,7 +233,7 @@ async def define(self, message, args):
     file.write(new_cmd_map)
     file.close()
 
-    await disc.edit_message(msg, title="Success !", desc=f"The mapping {args[0]} has been defined to {CMD_MAP[args[0]][CMD_INDEX_DESC]}")
+    await disc.send_message(message, title="Success !", desc=f"The mapping {args[0]} has been defined to {CMD_MAP[args[0]][CMD_INDEX_DESC]}")
 
 if not os.path.exists("db"):
     os.mkdir("db")
