@@ -12,6 +12,7 @@ ALL_LOGINS = [["erwan", "vivien"], ["hugo", "bois"],
               ["christophe", "terreaux"], ["vahan", "boghossian"],
               ["philippe", "lefebvre"], ["charlie", "brosse"],
               ["david", "horozian"], ["hugo", "houri"], ["zacharie", "constans"]]
+ALL_USERS = []
 
 
 def get_content(file):
@@ -153,5 +154,8 @@ def get_all_users():
     global ALL_LOGINS
     ALL_LOGINS = logins
 
+    global ALL_USERS
+    ALL_USERS = all_people
+
     # Returns the json if needed
-    return prepa_people + ing_people
+    return all_people
