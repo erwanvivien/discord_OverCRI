@@ -150,6 +150,8 @@ def double_jaro(args, login):
     jaro = jaro_Winkler(args[0], login[0])
     if len(args) >= 2:
         jaro += jaro_Winkler(args[1], login[1])
+    else:
+        jaro *= 2
     return jaro
 
 
@@ -243,7 +245,6 @@ async def map(self, message, args):
 async def mappings(self, message, args):
     msg = ""
     for k, v in CMD_MAP.items():
-        print(v)
         msg += f"`{k}`: {v[CMD_INDEX_DESC]}\n"
 
     await disc.send_message(message, title="Mappings", desc=msg)
