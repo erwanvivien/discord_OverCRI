@@ -16,6 +16,7 @@ import cri
 import random
 
 from jaro import jaro_Winkler
+from unidecode import unidecode
 
 LOG_FILE = "db/log"
 
@@ -145,6 +146,13 @@ async def get_random(self, message, args):
     await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
 
+def double_jaro(args, login):
+    jaro = jaro_Winkler(args[0], login[0])
+    if len(args) >= 2:
+        jaro += jaro_Winkler(args[1], login[1])
+    return jaro
+
+
 async def search(self, message, args):
     # No args
     if not args or not args[0]:
@@ -157,6 +165,34 @@ async def search(self, message, args):
             return await message.delete()
 
     # Else we parse the Database of logins
+    # Makes the assumption that the first one is the best one
+    args[0] = unidecode(args[0])
+    if len(args) >= 2:
+        args[1] = unidecode(args[1])
+
+    best_idx = 0
+    best_jaro = double_jaro(args, cri.ALL_LOGINS[0])
+
+    len_logins = len(cri.ALL_LOGINS)
+    for i in range(1, len_logins):
+        jaro = double_jaro(args, cri.ALL_LOGINS[i])
+        if jaro > best_jaro:
+            best_jaro = jaro
+            best_idx = i
+
+    login = ".".join(cri.ALL_LOGINS[best_idx])
+    user = cri.search_login(login)
+
+    fname = user["first_name"]
+    sname = user["last_name"]
+    login = user["login"]
+    image = f"https://photos.cri.epita.fr/thumb/{login}"
+
+    year = int(datetime.datetime.now().year / 100) * 100
+    year += int(user["uid"] / 1000)
+
+    await message.channel.send(image)
+    await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
 
 async def map(self, message, args):
