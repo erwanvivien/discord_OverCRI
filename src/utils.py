@@ -54,9 +54,15 @@ def log(fctname, error, message):
     f.close()
 
 
+CMD_INDEX_URL = 0
+CMD_INDEX_DESC = 1
+
 CMD_FILE_CONTENT = get_content("CMD_MAP").split('\n')
-CMD_MAP = {line.split(": ")[0]: line.split(": ")[1]
-           for line in CMD_FILE_CONTENT if line}
+CMD_MAP = {}
+for e in CMD_FILE_CONTENT:
+    if e:
+        cmds = e.split(": ")
+        CMD_MAP[cmds[0]] = [cmds[1], cmds[2]]
 
 
 async def get_group_random(self, message, args):
@@ -146,7 +152,7 @@ async def search(self, message, args):
     # One args probably means it an instant reply with file
     if len(args) == 1:
         if args[0] in CMD_MAP:
-            await disc.send_file(message, CMD_MAP[args[0]])
+            await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
             return await message.delete()
 
     # Else we parse the Database of logins
@@ -184,9 +190,10 @@ async def map(self, message, args):
     file.write(response.content)
     file.close()
 
-    CMD_MAP[bind_to] = filename
+    CMD_MAP[bind_to] = [filename, '']
 
-    tmp_map = [f"{k}: {v}" for k, v in CMD_MAP.items()]
+    tmp_map = [
+        f"{k}: {v[CMD_INDEX_URL]}: {v[CMD_INDEX_DESC]}" for k, v in CMD_MAP.items()]
     new_cmd_map = "\n".join(tmp_map)
 
     file = open("CMD_MAP", "w")
