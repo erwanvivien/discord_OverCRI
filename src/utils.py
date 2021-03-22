@@ -68,41 +68,38 @@ for e in CMD_FILE_CONTENT:
         CMD_MAP[cmds[0]] = [cmds[1], cmds[2]]
 
 
+def full_slug(sub_group):
+    sub_group = sub_group.lower()
+    if sub_group in cri.GROUP_SLUGS[sub_group]:
+        return cri.GROUP_SLUGS[sub_group]
+    return sub_group
+
+
 async def get_group_random(self, message, args):
-    global forbiden_slugs
-    group_slug = ""
     if not args:
-        groups = cri.all_groups()
-        if "detail" in groups:
-            return await disc.send_message(message, title=groups["detail"], desc="")
+        return await disc.error_message(message,
+                                        title="Bad usage", desc="No group-slug were given")
 
-        group = random.choices(groups)
-        group = group[0]
+    users = cri.members_group(args[0])
+    if not users:
+        return await disc.error_message(message,
+                                        title="Error", desc="This slug was not found. Check [https://cri.epita.fr/search/](https://cri.epita.fr/search/) to know all group slugs")
 
-        group_slug = group["slug"]
-    else:
-        group_slug = args[0]
+    group = full_slug(args[0])
+    users = cri.members_group(group)
 
-    if group_slug in forbiden_slugs:
-        return await get_group_random(self, message, args)
+    user = random.choices(users)
 
-    group_members = cri.members_group(group_slug)
-    if "detail" in group_members:
-        return await disc.send_message(message, title=groups["detail"], desc="")
-
-    if not group_members:
-        forbiden_slugs += [group_slug]
-        return await get_group_random(self, message, args)
-
-    member = random.choices(group_members)
-    member = member[0]
-
-    login = member["login"]
+    fname = user["first_name"]
+    sname = user["last_name"]
+    login = user["login"]
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
+    year = int(datetime.datetime.now().year / 100) * 100
+    year += int(user["uid"] / 1000)
+
     await message.channel.send(image)
-    if not args:
-        await message.channel.send(f"`Login: {login}`\n`Group: {group_slug}`")
+    await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
 
 async def get_login(self, message, args):
