@@ -24,7 +24,7 @@ CMDS = {
 }
 
 
-# cri.get_all_users()
+cri.get_all_users()
 
 
 class Client(discord.Client):

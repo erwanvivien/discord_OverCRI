@@ -88,7 +88,8 @@ async def get_group_random(self, message, args):
     group = full_slug(args[0])
     users = cri.members_group(group)
 
-    user = random.choices(users)
+    user = random.choices(users)[0]
+    user = cri.search_login(user["login"])
 
     fname = user["first_name"]
     sname = user["last_name"]

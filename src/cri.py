@@ -63,7 +63,7 @@ GROUP_SLUGS = {
     "acdc": "prepa-assistants-acdc",
     "acu": "ing-assistants-acu",
     "asm": "prepa-assistants-asm",
-    "yaka": "prepa-assistants-yaka",
+    "yaka": "ing-assistants-yaka",
     "assistants": "ing-assistants",
 }
 
