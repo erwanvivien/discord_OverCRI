@@ -13,6 +13,22 @@ VALID_COLOR = discord.Colour(0x55da50)
 
 REPORT_CHANN_ID = 819550515347456061
 
+HELP_EMBED = discord.Embed(title="Help", url="https://github.com/erwanvivien/discord_OverCRI",
+                           description="**How to use the bot:**")
+
+HELP_EMBED.add_field(name="• Groups",
+                     value="- [`!!groups`](https://github.com/erwanvivien/discord_OverCRI#groups): Gets a random person from specified group", inline=False)
+HELP_EMBED.add_field(name="• People",
+                     value='''- [`!!login <login>`](https://github.com/erwanvivien/discord_OverCRI#people): Gets a person from exact login
+- [`!!random`](https://github.com/erwanvivien/discord_OverCRI#people): Gets a random person from all groups
+- [`!!firstname [lastname]`](https://github.com/erwanvivien/discord_OverCRI#people): Gets a person matching the best from both input, of course if you specify the lastname it has way better results''', inline=False)
+HELP_EMBED.add_field(name="• Mappings", value='''- [`!!map <mapping-name>`](https://github.com/erwanvivien/discord_OverCRI#mappings): It maps the file sent to the mapping-name. ⚠️ This needs an attached file
+- [`!!define <mapping-name> any desc ...`](https://github.com/erwanvivien/discord_OverCRI#mappings): It adds a description to the said mapping
+- [`!!mappings`](https://github.com/erwanvivien/discord_OverCRI#mappings): Displays all mappings
+- [`!!<mapping-name>`](https://github.com/erwanvivien/discord_OverCRI#mappings): Sends back the file mapped''', inline=False)
+HELP_EMBED.add_field(
+    name="• Help", value="- [`!!help`](https://github.com/erwanvivien/discord_OverCRI#help): Displays this message", inline=False)
+
 
 def author_name(author, discriminator=True):
     # Get nick from msg author (discord) if exists

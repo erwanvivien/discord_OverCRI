@@ -270,6 +270,10 @@ async def define(self, message, args):
 
     await disc.send_message(message, title="Success !", desc=f"The mapping {args[0]} has been defined to {CMD_MAP[args[0]][CMD_INDEX_DESC]}")
 
+
+async def help(self, message, args):
+    await message.channel.send(embed=disc.HELP_EMBED)
+
 if not os.path.exists("db"):
     os.mkdir("db")
     f = open(LOG_FILE, "w")
