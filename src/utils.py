@@ -131,15 +131,15 @@ async def get_random(self, message, args):
     login = ".".join(rdm)
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
-    users = cri.search_login(login)
+    user = cri.search_login(login)
 
-    fname = users["first_name"]
-    sname = users["last_name"]
-    login = users["login"]
+    fname = user["first_name"]
+    sname = user["last_name"]
+    login = user["login"]
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
     year = int(datetime.datetime.now().year / 100) * 100
-    year += int(users["uid"] / 1000)
+    year += int(user["uid"] / 1000)
 
     await message.channel.send(image)
     await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
@@ -147,9 +147,8 @@ async def get_random(self, message, args):
 
 async def search(self, message, args):
     # No args
-    if not args:
-        return await disc.error_message(
-            message, desc="Please provide at least one arg after !! command")
+    if not args or not args[0]:
+        return
 
     # One args probably means it an instant reply with file
     if len(args) == 1:
