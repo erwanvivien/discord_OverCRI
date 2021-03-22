@@ -18,6 +18,8 @@ CMDS = {
     "!!random": utils.get_random,
     "!!": utils.search,
     "!!map": utils.map,
+    "!!mappings": utils.mappings,
+    "!!define": utils.define,
 }
 
 

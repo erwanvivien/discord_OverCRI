@@ -160,7 +160,7 @@ async def search(self, message, args):
 
 async def map(self, message, args):
     if not message.attachments:
-        return await disc.error_message(message, desc="Please provide an file as attachement")
+        return await disc.error_message(message, desc="Please provide a file as attachement")
     if not args:
         return await disc.error_message(message, desc="Please provide a name to this file")
 
@@ -202,6 +202,36 @@ async def map(self, message, args):
 
     await disc.edit_message(msg, title="Success !", desc=f"The file {attach_name} has been bound to {bind_to}")
 
+
+async def mappings(self, message, args):
+    msg = ""
+    for k, v in CMD_MAP.items():
+        print(v)
+        msg += f"`{k}`: {v[CMD_INDEX_DESC]}\n"
+
+    await disc.send_message(message, title="Mappings", desc=msg)
+
+
+async def define(self, message, args):
+    if not args:
+        return await disc.error_message(message, desc="Please provide a mapping to define")
+
+    if not args[0] in CMD_MAP:
+        return await disc.error_message(message, desc="Please provide a mapping that exist")
+    if len(args) <= 1:
+        return await disc.error_message(message, desc="Please provide a message for this mapping")
+
+    CMD_MAP[args[0]][CMD_INDEX_DESC] = " ".join(args[1:])
+
+    tmp_map = [
+        f"{k}: {v[CMD_INDEX_URL]}: {v[CMD_INDEX_DESC]}" for k, v in CMD_MAP.items()]
+    new_cmd_map = "\n".join(tmp_map)
+
+    file = open("CMD_MAP", "w")
+    file.write(new_cmd_map)
+    file.close()
+
+    await disc.edit_message(msg, title="Success !", desc=f"The mapping {args[0]} has been defined to {CMD_MAP[args[0]][CMD_INDEX_DESC]}")
 
 if not os.path.exists("db"):
     os.mkdir("db")
