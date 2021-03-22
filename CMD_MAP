@@ -1,5 +1,5 @@
-poop: assets/poop.png
-fart: assets/reverbed_fart.mp3
-valheim: assets/valheim.m4a
-voleurdecode: assets/voleurdecode.jpg
-edt: assets/edt.png
+poop: assets/poop.png: poop image
+fart: assets/reverbed_fart.mp3: the only reverbed fart
+valheim: assets/valheim.m4a: VALHEIIIIIIIIIIIIIIM
+voleurdecode: assets/voleurdecode.jpg: Daniel
+edt: assets/edt.png: Emploi du temps
