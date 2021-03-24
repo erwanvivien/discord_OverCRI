@@ -19,6 +19,7 @@ from jaro import jaro_Winkler
 from unidecode import unidecode
 
 LOG_FILE = "db/log"
+MAP_FILE = "db/CMD_MAP"
 
 forbiden_slugs = []
 
@@ -60,7 +61,7 @@ def log(fctname, error, message):
 CMD_INDEX_URL = 0
 CMD_INDEX_DESC = 1
 
-CMD_FILE_CONTENT = get_content("CMD_MAP").split('\n')
+CMD_FILE_CONTENT = get_content(MAP_FILE).split('\n')
 CMD_MAP = {}
 for e in CMD_FILE_CONTENT:
     if e:
@@ -233,7 +234,7 @@ async def map(self, message, args):
         f"{k}: {v[CMD_INDEX_URL]}: {v[CMD_INDEX_DESC]}" for k, v in CMD_MAP.items()]
     new_cmd_map = "\n".join(tmp_map)
 
-    file = open("CMD_MAP", "w")
+    file = open(MAP_FILE, "w")
     file.write(new_cmd_map)
     file.close()
 
@@ -263,7 +264,7 @@ async def define(self, message, args):
         f"{k}: {v[CMD_INDEX_URL]}: {v[CMD_INDEX_DESC]}" for k, v in CMD_MAP.items()]
     new_cmd_map = "\n".join(tmp_map)
 
-    file = open("CMD_MAP", "w")
+    file = open(MAP_FILE, "w")
     file.write(new_cmd_map)
     file.close()
 
