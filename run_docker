@@ -8,7 +8,6 @@ if ! [ -z "$container_id" ]; then
 	sudo docker container stop $container_id
 fi
 sudo docker image rm --force "$name"
-sudo docker build -t "$name" .
-# sudo docker run -d $(pwd):/app "$name"
-# sudo docker run -d -v db_"$name":/app "$name"
-sudo docker run -it -v db_"$name":/app/db "$name" /bin/bash
+sudo docker build --no-cache -t "$name" .
+sudo docker run -d -v db_"$name"1:/app/db -v db_"$name"2:/app/assets/ "$name"
+# sudo docker run -it -v db_"$name"1:/app/db/ -v db_"$name"2:/app/assets/ "$name" /bin/bash
