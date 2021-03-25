@@ -4,7 +4,7 @@ import random
 WRONG_USAGE = "Something went wrong"
 HELP_USAGE = "Please see `!!help` for further information"
 HOWTO_URL = "https://github.com/erwanvivien/discord_OverCRI"
-ICON_URL = "https://raw.githubusercontent.com/erwanvivien/discord-eGLD/main/imgs/goldr-icon.png"
+ICON_URL = "https://raw.githubusercontent.com/erwanvivien/discord_OverCRI/master/assets/cri-logo.png"
 
 BOT_COLOR = discord.Colour(0xFBDC1B)
 ERROR_COLOR = discord.Colour(0xff0000)
@@ -28,6 +28,7 @@ HELP_EMBED.add_field(name="• Mappings", value='''- [`!!map <mapping-name>`](ht
 - [`!!<mapping-name>`](https://github.com/erwanvivien/discord_OverCRI#mappings): Sends back the file mapped''', inline=False)
 HELP_EMBED.add_field(
     name="• Help", value="- [`!!help`](https://github.com/erwanvivien/discord_OverCRI#help): Displays this message", inline=False)
+HELP_EMBED.set_thumbnail(url=ICON_URL)
 
 
 def author_name(author, discriminator=True):
