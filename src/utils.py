@@ -62,11 +62,13 @@ CMD_INDEX_URL = 0
 CMD_INDEX_DESC = 1
 
 CMD_FILE_CONTENT = get_content(MAP_FILE).split('\n')
+CMD_FILE_CONTENT = [e for e in CMD_FILE_CONTENT if e]
+
 CMD_MAP = {}
+
 for e in CMD_FILE_CONTENT:
-    if e:
-        cmds = e.split(": ")
-        CMD_MAP[cmds[0]] = [cmds[1], cmds[2]]
+    cmds = e.split(": ")
+    CMD_MAP[cmds[0]] = [cmds[1], cmds[2]]
 
 
 def full_slug(sub_group):
@@ -273,6 +275,7 @@ async def define(self, message, args):
 
 async def help(self, message, args):
     await message.channel.send(embed=disc.HELP_EMBED)
+
 
 if not os.path.exists("db"):
     os.mkdir("db")
