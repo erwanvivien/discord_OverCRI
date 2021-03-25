@@ -164,8 +164,9 @@ async def search(self, message, args):
     # One args probably means it an instant reply with file
     if len(args) == 1:
         if args[0] in CMD_MAP:
+            await message.delete()
             await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
-            return await message.delete()
+            return
 
     # Else we parse the Database of logins
     # Makes the assumption that the first one is the best one
