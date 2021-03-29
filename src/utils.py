@@ -240,7 +240,7 @@ async def map(self, message, args):
     msg = await disc.send_message(message, title="Starting to download", desc="")
 
     if bind_to in CMD_MAP:
-        os.remove(CMD_MAP[bind_to])
+        os.remove(CMD_MAP[bind_to][CMD_INDEX_URL])
 
     # attach_id = message.attachments[0].id # Unsued ID
     attach_name = message.attachments[0].filename
