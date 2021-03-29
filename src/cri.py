@@ -239,8 +239,9 @@ def search_login(login):
 def get_all_users():
     prepa_people = members_group("prepa")
     ing_people = members_group("ing")
+    inter_people = members_group("inter")
 
-    all_people = prepa_people + ing_people
+    all_people = prepa_people + ing_people + inter_people
 
     logins = []
     for e in all_people:
