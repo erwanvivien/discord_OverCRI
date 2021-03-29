@@ -8,6 +8,8 @@ import os
 # Needed to read date
 import datetime
 
+import discord
+
 # Own wrapper around discord API
 import discord_utils as disc
 # Own wrapper around CRI API
@@ -183,7 +185,11 @@ async def search(self, message, args):
     # One args probably means it an instant reply with file
     if len(args) == 1:
         if args[0] in CMD_MAP:
-            await message.delete()
+            try:
+                await message.delete()
+            except discord.Forbidden:
+                await disc.error_message(message, title="Missing permission", desc="Please give the bot the permission to delete messages")
+
             await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
             return
 
