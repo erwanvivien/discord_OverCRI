@@ -73,7 +73,7 @@ for e in CMD_FILE_CONTENT:
 
 def full_slug(sub_group):
     sub_group = sub_group.lower()
-    if sub_group in cri.GROUP_SLUGS[sub_group]:
+    if sub_group in cri.GROUP_SLUGS:
         return cri.GROUP_SLUGS[sub_group]
     if sub_group.isnumeric():
         diff_promo = [
@@ -89,10 +89,11 @@ def full_slug(sub_group):
         if month >= 9:  # Checks if we are in september or more
             year += 1
 
-        wanted = (int(sub_group) - year) + 2
-        if wanted < 0 or wanted >= len(diff_promo):
+        diff = abs(int(sub_group) - year)
+        if diff >= len(diff_promo) // 2:
             return sub_group
 
+        wanted = (-diff - 1) % len(diff_promo)
         return diff_promo[wanted]
 
     return sub_group
@@ -103,13 +104,11 @@ async def get_group_random(self, message, args):
         return await disc.error_message(message,
                                         title="Bad usage", desc="No group-slug were given")
 
-    users = cri.members_group(args[0])
-    if not users:
-        return await disc.error_message(message,
-                                        title="Error", desc="This slug was not found. Check [https://cri.epita.fr/search/](https://cri.epita.fr/search/) to know all group slugs")
-
     group = full_slug(args[0])
     users = cri.members_group(group)
+    if not users or "detail" in users:
+        return await disc.error_message(message,
+                                        title="Error", desc="This slug was not found. Check [https://cri.epita.fr/search/](https://cri.epita.fr/search/) to know all group slugs")
 
     user = random.choices(users)[0]
     user = cri.search_login(user["login"])
@@ -119,7 +118,7 @@ async def get_group_random(self, message, args):
     login = user["login"]
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
-    year = int(datetime.datetime.now().year / 100) * 100
+    year = 2000  # We assume this bot will be old-school by 2100
     year += int(user["uid"] / 1000)
 
     await message.channel.send(image)
