@@ -75,6 +75,26 @@ def full_slug(sub_group):
     sub_group = sub_group.lower()
     if sub_group in cri.GROUP_SLUGS[sub_group]:
         return cri.GROUP_SLUGS[sub_group]
+    if sub_group.isnumeric():
+        diff_promo = [
+            cri.GROUP_SLUGS["sup"],
+            cri.GROUP_SLUGS["spe"],
+            cri.GROUP_SLUGS["ing1"],
+            cri.GROUP_SLUGS["ing2"],
+            cri.GROUP_SLUGS["ing3"],
+        ]
+
+        now = datetime.datetime.now()
+        year, month = now.year, now.month
+        if month >= 9:  # Checks if we are in september or more
+            year += 1
+
+        wanted = (int(sub_group) - year) + 2
+        if wanted < 0 or wanted >= len(diff_promo):
+            return sub_group
+
+        return diff_promo[wanted]
+
     return sub_group
 
 

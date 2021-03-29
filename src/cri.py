@@ -35,8 +35,8 @@ GROUP_SLUGS = {
     "s10": "ing-ing3-s10",
 
     # Promos
-    "spe": "prepa-spe",
     "sup": "prepa-sup",
+    "spe": "prepa-spe",
     "ing1": "ing-ing1",
     "ing2": "ing-ing2",
     "ing3": "ing-ing3",
