@@ -243,6 +243,10 @@ def get_all_users():
 
     all_people = prepa_people + ing_people + inter_people
 
+    global ALL_USERS
+    if not all_people:
+        return ALL_USERS
+
     logins = []
     for e in all_people:
         # remove all accents
@@ -256,7 +260,6 @@ def get_all_users():
     global ALL_LOGINS
     ALL_LOGINS = logins
 
-    global ALL_USERS
     ALL_USERS = all_people
 
     # Returns the json if needed
