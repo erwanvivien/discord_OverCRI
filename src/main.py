@@ -11,7 +11,7 @@ import utils
 ERRORS = []
 DISC_LNK_DEV = "https://discord.com/api/oauth2/authorize?client_id=819549722422673448&permissions=2147544128&scope=bot%20applications.commands"
 DISC_LNK = "https://discord.com/api/oauth2/authorize?client_id=819549623172726824&permissions=2147544128&scope=bot%20applications.commands"
-token = utils.get_content("token_dev")
+token = utils.get_content("token")
 
 CMDS = {
     # Link to a wallet
