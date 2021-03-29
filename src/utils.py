@@ -269,6 +269,28 @@ async def map(self, message, args):
     await disc.edit_message(msg, title="Success !", desc=f"The file {attach_name} has been bound to {bind_to}")
 
 
+async def unmap(self, message, args):
+    if not args:
+        return await disc.error_message(message, desc="Please provide a valid mapping to delete")
+
+    mapping = args[0]
+    if not mapping in CMD_MAP:
+        return await disc.error_message(message, desc="Please provide a valid mapping to delete")
+
+    os.remove(CMD_MAP[mapping][CMD_INDEX_URL])
+    del CMD_MAP[mapping]
+
+    tmp_map = [
+        f"{k}: {v[CMD_INDEX_URL]}: {v[CMD_INDEX_DESC]}" for k, v in CMD_MAP.items()]
+    new_cmd_map = "\n".join(tmp_map)
+
+    file = open(MAP_FILE, "w")
+    file.write(new_cmd_map)
+    file.close()
+
+    await disc.send_message(message, title="Success !", desc=f"The mapping {mapping} has been deleted")
+
+
 async def mappings(self, message, args):
     msg = ""
     for k, v in CMD_MAP.items():
