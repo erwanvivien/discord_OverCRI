@@ -47,6 +47,11 @@ GROUP_SLUGS = {
     "lse":  "labo-lse",
     "seal": "labo-seal",
 
+    # Tracks
+    "riemann": "ing-ing1-riemann",
+    "shannon": "ing-ing1-shannon",
+    "tanenbaum": "ing-ing1-tanenbaum",
+
     # Majeures
     "csi": "ing-csi",
     "gistre": "ing-gistre",
