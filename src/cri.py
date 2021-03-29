@@ -47,6 +47,19 @@ GROUP_SLUGS = {
     "lse":  "labo-lse",
     "seal": "labo-seal",
 
+    # Majeures
+    "csi": "ing-csi",
+    "gistre": "ing-gistre",
+    "gitm": "ing-gitm",
+    "image": "ing-image",
+    "mit": "ing-mit",
+    "rdi": "ing-rdi",
+    "sante": "ing-sante",
+    "scia": "ing-scia",
+    "sigl": "ing-sigl",
+    "srs": "ing-srs",
+    "tcom": "ing-tcom",
+
     # Departments
     "de": "ing-de",
     "scola": "ing-scolarite",
