@@ -188,7 +188,9 @@ async def search(self, message, args):
             try:
                 await message.delete()
             except discord.Forbidden:
-                await disc.error_message(message, title="Missing permission", desc="Please give the bot the permission to delete messages")
+                await disc.error_message(message, title="Missing permission", desc="Please give the bot the permission to delete messages\n" +
+                                         "This can be at the global level (if you have remove some permission to the BOT)\n" +
+                                         "Or at the channel level, see if there are no conflicts between your permissions.")
 
             await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
             return
