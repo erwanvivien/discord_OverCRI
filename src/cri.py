@@ -241,11 +241,14 @@ def get_all_users():
     ing_people = members_group("ing")
     inter_people = members_group("inter")
 
-    all_people = prepa_people + ing_people + inter_people
+    try:
+        # If cri is down, we can't sum the list as it's dicts
+        all_people = prepa_people + ing_people + inter_people
+    except:
+        return None
 
-    global ALL_USERS
     if not all_people:
-        return ALL_USERS
+        return None
 
     logins = []
     for e in all_people:
@@ -260,6 +263,7 @@ def get_all_users():
     global ALL_LOGINS
     ALL_LOGINS = logins
 
+    global ALL_USERS
     ALL_USERS = all_people
 
     # Returns the json if needed

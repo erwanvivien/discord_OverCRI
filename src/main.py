@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 import datetime
 
+import asyncio
+
 import discord_utils as disc
 import cri
 import utils
@@ -9,7 +11,7 @@ import utils
 ERRORS = []
 DISC_LNK_DEV = "https://discord.com/api/oauth2/authorize?client_id=819549722422673448&permissions=2147544128&scope=bot%20applications.commands"
 DISC_LNK = "https://discord.com/api/oauth2/authorize?client_id=819549623172726824&permissions=2147544128&scope=bot%20applications.commands"
-token = utils.get_content("token")
+token = utils.get_content("token_dev")
 
 CMDS = {
     # Link to a wallet
@@ -18,13 +20,11 @@ CMDS = {
     "!!random": utils.get_random,
     "!!": utils.search,
     "!!map": utils.map,
+    "!!unmap": utils.unmap,
     "!!mappings": utils.mappings,
     "!!define": utils.define,
     "!!help": utils.help,
 }
-
-
-cri.get_all_users()
 
 
 class Client(discord.Client):
@@ -62,6 +62,21 @@ class Client(discord.Client):
 
 client = Client()
 
+
+async def cron():
+    await client.wait_until_ready()
+    while True:
+        try:
+            users = cri.get_all_users()
+            if not users:
+                await asyncio.sleep(5 * 60)  # Sleeps 5 mins
+            else:
+                await asyncio.sleep(24 * 60 * 60)  # Sleeps 1 day mins
+        except Exception as e:
+            await disc.report(client, "Error in CRON loop", str(e))
+            await asyncio.sleep(5 * 60)  # Sleeps 5 mins
+
+
 # Needed for async work
-# client.loop.create_task(cron())
+client.loop.create_task(cron())
 client.run(token)
