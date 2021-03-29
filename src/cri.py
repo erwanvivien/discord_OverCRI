@@ -118,12 +118,18 @@ base_url = "https://cri.epita.fr/api/v2"
 
 def all_campus():
     r = requests.get(f"{base_url}/campus/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def specific_campus(slug):
     r = requests.get(f"{base_url}/campus/{slug}/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 # GROUPS
 
@@ -131,34 +137,52 @@ def specific_campus(slug):
 def all_groups():
     r = requests.get(
         f"{base_url}/groups/?kind=semester&private=false", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def specific_group(slug):
     r = requests.get(f"{base_url}/groups/{slug}/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def history_group(slug):
     r = requests.get(f"{base_url}/groups/{slug}/history", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def members_group(slug):
     r = requests.get(f"{base_url}/groups/{slug}/members/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 # USERS
 
 
 def all_users():
     r = requests.get(f"{base_url}/users/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def self_user():
     r = requests.get(f"{base_url}/users/me/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def search_user(logins=None, uids=None, emails=None, firstnames=None,
@@ -198,12 +222,18 @@ def search_user(logins=None, uids=None, emails=None, firstnames=None,
         return []
 
     r = requests.get(f"{base_url}/users/search/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def search_login(login):
     r = requests.get(f"{base_url}/users/{login}/", headers=auth)
-    return r.json()
+    try:
+        return r.json()
+    except:
+        return []
 
 
 def get_all_users():
