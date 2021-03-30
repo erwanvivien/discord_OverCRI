@@ -81,5 +81,7 @@ async def cron():
 
 
 # Needed for async work
-client.loop.create_task(cron())
+if token_file_name == "token":
+    client.loop.create_task(cron())
+
 client.run(token)
