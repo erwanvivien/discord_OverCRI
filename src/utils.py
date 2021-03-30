@@ -110,6 +110,16 @@ async def get_group_random(self, message, args):
         return await disc.error_message(message,
                                         title="Bad usage", desc="No group-slug were given")
 
+    if args[0] == "help":
+        help_strings = [
+            f"`{k}" + (" " * (12 - len(str(k)))) + f">` {v}" for k, v in cri.GROUP_SLUGS.items()]
+        help_msg = "\n".join(help_strings)
+
+        print(help_msg)
+
+        return await disc.send_message(message,
+                                       title="Different groups:", desc=help_msg)
+
     group = full_slug(args[0])  # Gets the actual group slug
 
     users = cri.members_group(group)
