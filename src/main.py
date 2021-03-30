@@ -11,7 +11,9 @@ import utils
 ERRORS = []
 DISC_LNK_DEV = "https://discord.com/api/oauth2/authorize?client_id=819549722422673448&permissions=2147544128&scope=bot%20applications.commands"
 DISC_LNK = "https://discord.com/api/oauth2/authorize?client_id=819549623172726824&permissions=2147544128&scope=bot%20applications.commands"
-token = utils.get_content("token")
+
+token_file_name = "token"
+token = utils.get_content(token_file_name)
 
 CMDS = {
     # Link to a wallet
@@ -34,7 +36,8 @@ class Client(discord.Client):
         print('==============================================================================================')
         print()
 
-        await disc.report(self, "Started", "Started successfully !")
+        if token_file_name == "token":
+            await disc.report(self, "Started", "Started successfully !")
 
     async def on_message(self, message):
         if message.author.id in utils.BOT_IDS:        # Doesn't do anything if it's a bot message
