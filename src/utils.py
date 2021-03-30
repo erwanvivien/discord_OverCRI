@@ -91,12 +91,16 @@ def full_slug(sub_group):
         if month >= 9:  # Checks if we are in september or more
             year += 1
 
-        diff = abs(int(sub_group) - year)
-        if diff >= len(diff_promo) // 2:
+        diff = int(sub_group) - year
+        print(diff, len(diff_promo))
+
+        if diff < 0 or diff >= len(diff_promo):
             return sub_group
 
-        wanted = (-diff - 1) % len(diff_promo)
-        return diff_promo[wanted]
+        print(diff_promo)
+        print(diff_promo[diff])
+
+        return diff_promo[diff]
 
     return sub_group
 
@@ -106,7 +110,8 @@ async def get_group_random(self, message, args):
         return await disc.error_message(message,
                                         title="Bad usage", desc="No group-slug were given")
 
-    group = full_slug(args[0])
+    group = full_slug(args[0])  # Gets the actual group slug
+
     users = cri.members_group(group)
     if not users or "detail" in users:
         return await disc.error_message(message,
