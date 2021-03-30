@@ -129,7 +129,7 @@ async def get_group_random(self, message, args):
     year += int(user["uid"] / 1000)
 
     await message.channel.send(image)
-    await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
+    await message.channel.send(f"`{fname} {sname}`")
 
 
 async def get_login(self, message, args):
