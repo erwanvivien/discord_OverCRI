@@ -25,7 +25,7 @@ MAP_FILE = "db/CMD_MAP"
 
 forbiden_slugs = []
 
-BOT_IDS = []
+BOT_IDS = [819549722422673448, 819549623172726824]
 DEV_IDS = [289145021922279425]
 
 diff_promo = [
