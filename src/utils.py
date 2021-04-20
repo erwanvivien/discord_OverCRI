@@ -198,6 +198,7 @@ async def search(self, message, args):
         return
 
     # One args probably means it an instant reply with file
+    # Or it's a login
     if len(args) == 1:
         if args[0] in CMD_MAP:
             try:
@@ -209,6 +210,8 @@ async def search(self, message, args):
 
             await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
             return
+        elif args[0].count(".") == 1:
+            return await get_login(self, message, args)
 
     # Else we parse the Database of logins
     # Makes the assumption that the first one is the best one
