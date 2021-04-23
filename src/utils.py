@@ -208,7 +208,11 @@ async def search(self, message, args):
                                          "This can be at the global level (if you have remove some permission to the BOT)\n" +
                                          "Or at the channel level, see if there are no conflicts between your permissions.")
 
-            await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
+            path = CMD_MAP[args[0]][CMD_INDEX_URL]
+            if path.split('.')[-1] == "txt":
+                await message.channel.send(get_content(path))
+            else:
+                await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
             return
         elif args[0].count(".") == 1:
             return await get_login(self, message, args)
@@ -249,13 +253,10 @@ async def search(self, message, args):
 
 
 async def map(self, message, args):
-    if not message.attachments:
-        return await disc.error_message(message, desc="Please provide a file as attachement")
     if not args:
         return await disc.error_message(message, desc="Please provide a name to this file")
 
     bind_to = args[0]
-
     if bind_to == '--force':
         return await disc.error_message(message, desc="Please provide a name different from --force")
     if bind_to in CMD_MAP and not "--force" in args:
@@ -266,21 +267,31 @@ async def map(self, message, args):
     if bind_to in CMD_MAP:
         os.remove(CMD_MAP[bind_to][CMD_INDEX_URL])
 
-    # attach_id = message.attachments[0].id # Unsued ID
-    attach_name = message.attachments[0].filename
-    attach_url = message.attachments[0].url
+    if message.attachments:
+        # attach_id = message.attachments[0].id # Unsued ID
+        attach_name = message.attachments[0].filename
+        attach_url = message.attachments[0].url
 
-    extension = attach_name.split('.')[-1]
+        extension = attach_name.split('.')[-1]
+        response = requests.get(attach_url)
 
-    response = requests.get(attach_url)
+        content = response.content
+    else:
+        if len(args) <= 1:
+            return await disc.edit_message(msg, title="Error", desc="No text nor attachments were found")
+        extension = "txt"
+        content = str.encode(" ".join(args[1:]))
 
     filename = f"assets/{bind_to}.{extension}"
 
     file = open(filename, "wb")
-    file.write(response.content)
+    file.write(content)
     file.close()
 
-    CMD_MAP[bind_to] = [filename, '']
+    if bind_to in CMD_MAP:
+        CMD_MAP[bind_to] = [filename, CMD_MAP[bind_to][1]]
+    else:
+        CMD_MAP[bind_to] = [filename, '']
 
     tmp_map = [
         f"{k}: {v[CMD_INDEX_URL]}: {v[CMD_INDEX_DESC]}" for k, v in CMD_MAP.items()]
@@ -290,7 +301,7 @@ async def map(self, message, args):
     file.write(new_cmd_map)
     file.close()
 
-    await disc.edit_message(msg, title="Success !", desc=f"The file {attach_name} has been bound to {bind_to}")
+    await disc.edit_message(msg, title="Success !", desc=f"{bind_to} has been bound.")
 
 
 async def unmap(self, message, args):
