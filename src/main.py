@@ -26,6 +26,7 @@ CMDS = {
     "!!mappings": utils.mappings,
     "!!define": utils.define,
     "!!help": utils.help,
+    "!!ban": utils.ban,
 }
 
 
@@ -44,7 +45,7 @@ class Client(discord.Client):
             return
 
         split = message.content.split(' ', 1)  # separate command from args
-        cmd = split[0].lower()
+        cmd = split[0]
         args = split[1].split(' ') if len(split) > 1 else []
 
         # Get Discord Nick if existant or discord Name

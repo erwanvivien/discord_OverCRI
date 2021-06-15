@@ -360,6 +360,40 @@ async def help(self, message, args):
     await message.channel.send(embed=disc.HELP_EMBED)
 
 
+async def ban(self, message, args):
+    if not message.author.id in DEV_IDS:
+        return
+    if not args or len(args) < 1:
+        return
+    if not args[0].startswith("<@!"):
+        return
+
+    user_id = int(args[0][3:-1])
+
+    member = await self.fetch_user(user_id)
+    print(member)
+    print(type(member))
+
+    members = message.guild.fetch_members(limit=None)
+    print(members)
+
+    member = message.guild.get_member(member.id)
+    print(user_id)
+    print(member)
+    print(type(member))
+
+    print()
+
+    # try:
+    #     private_channel = await member.dm_channel()
+    #     print(private_channel)
+    #     await member.kick(reason="bruh")
+    # except Exception as e:
+    #     print("ERROR")
+    #     print(e)
+    #     return
+
+
 if not os.path.exists("db"):
     os.mkdir("db")
     f = open(LOG_FILE, "w")
