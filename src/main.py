@@ -27,6 +27,7 @@ CMDS = {
     "!!define": utils.define,
     "!!help": utils.help,
     "!!ban": utils.ban,
+    "!!choffix": utils.choffix,
 }
 
 

@@ -394,6 +394,10 @@ async def ban(self, message, args):
     #     return
 
 
+async def choffix(self, message, args):
+    await disc.send_file(message, "assets/____choffix.png")
+
+
 if not os.path.exists("db"):
     os.mkdir("db")
     f = open(LOG_FILE, "w")
