@@ -21,6 +21,7 @@ from jaro import jaro_Winkler
 from unidecode import unidecode
 
 LOG_FILE = "db/log"
+LOGINS_FILE = "./db/logins.json"
 MAP_FILE = "db/CMD_MAP"
 
 forbiden_slugs = []
@@ -184,9 +185,9 @@ async def get_random(self, message, args):
 
 
 def double_jaro(args, login):
-    jaro = jaro_Winkler(args[0], login[0])
+    jaro = jaro_Winkler(args[0], login["first_name"])
     if len(args) >= 2:
-        jaro += jaro_Winkler(args[1], login[1])
+        jaro += jaro_Winkler(args[1], login["last_name"])
     else:
         jaro *= 2
     return jaro
@@ -233,23 +234,17 @@ async def search(self, message, args):
             best_jaro = jaro
             best_idx = i
 
-    log("search", "PERSON = JARO", f"{cri.ALL_LOGINS[i]}: {best_jaro}")
+    # log("search", "PERSON = JARO", f"{cri.ALL_LOGINS["login"]}: {best_jaro}")
     if best_jaro < 0.1:
         return
 
-    login = ".".join(cri.ALL_LOGINS[best_idx])
-    user = cri.search_login(login)
-
-    fname = user["first_name"]
-    sname = user["last_name"]
-    login = user["login"]
+    fname = cri.ALL_LOGINS[best_idx]["first_name"]
+    lname = cri.ALL_LOGINS[best_idx]["last_name"]
+    login = cri.ALL_LOGINS[best_idx]["login"]
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
-    year = int(datetime.datetime.now().year / 100) * 100
-    year += int(user["uid"] / 1000)
-
     await message.channel.send(image)
-    await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
+    await message.channel.send(f"`{fname} {lname} <{login}>`: https://cri.epita.fr/users/{login}/")
 
 
 async def map(self, message, args):
@@ -400,5 +395,12 @@ async def choffix(self, message, args):
 
 if not os.path.exists("db"):
     os.mkdir("db")
+    f.close()
+
+if not os.path.exists(LOGINS_FILE):
+    f = open(LOGINS_FILE, "w")
+    f.close()
+
+if not os.path.exists(LOG_FILE):
     f = open(LOG_FILE, "w")
     f.close()

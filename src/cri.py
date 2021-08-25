@@ -7,11 +7,18 @@ import json
 import base64
 from unidecode import unidecode
 
+from threading import Thread, Lock
+import numpy as np
+
 
 ALL_LOGINS = [["erwan", "vivien"], ["hugo", "bois"],
               ["christophe", "terreaux"], ["vahan", "boghossian"],
               ["philippe", "lefebvre"], ["charlie", "brosse"],
               ["david", "horozian"], ["hugo", "houri"], ["zacharie", "constans"]]
+
+ALL_LOGINS = [{"last_name": e[1], "first_name": e[0],
+               "login": ".".join(e)} for e in ALL_LOGINS]
+
 ALL_USERS = []
 
 GROUP_SLUGS = {
@@ -159,8 +166,13 @@ def history_group(slug):
         return []
 
 
-def members_group(slug):
+def members_group(slug, status_code=None):
+    if status_code and status_code[0] != 200:
+        return []
+
     r = requests.get(f"{base_url}/groups/{slug}/members/", headers=auth)
+    if status_code:
+        status_code[0] = r.status_code
     try:
         return r.json()
     except:
@@ -236,35 +248,123 @@ def search_login(login):
         return []
 
 
-def get_all_users():
-    prepa_people = members_group("prepa")
-    ing_people = members_group("ing")
-    inter_people = members_group("inter")
+mutex = Lock()
 
+
+def format_logins(lst, index, results, known_logins):
+    # print(lst, index)
+    for e in lst:
+        # remove all accents
+        login_str = unidecode(e["login"])
+
+        if login_str in known_logins:
+            results.append({"first_name": known_logins[login_str][0],
+                            "last_name": known_logins[login_str][1],
+                            "login": login_str})
+            continue
+
+        # split in First/Last name
+        login = login_str.split('.')
+        if len(login) == 2:
+            results.append({"last_name": login[1],
+                            "first_name": login[0], "login": login_str})
+
+            mutex.acquire()
+            try:
+                known_logins[login_str] = [login[0], login[1]]
+            finally:
+                mutex.release()
+        else:
+            r = requests.get(e["url"], headers=auth)
+            if r.status_code != 200:
+                return
+
+            r = r.json()
+            if not "last_name" in r or not "first_name" in r:
+                continue
+            last_name = unidecode(r["last_name"]).lower()
+            first_name = unidecode(r["first_name"]).lower()
+
+            print({"last_name": last_name,
+                   "first_name": first_name, "login": login_str})
+            results.append({"last_name": last_name,
+                            "first_name": first_name, "login": login_str})
+            mutex.acquire()
+            try:
+                known_logins[login_str] = [first_name, last_name]
+            finally:
+                mutex.release()
+
+
+def get_all_users():
+    all_people = []
     try:
+        status_code = [200]
         # If cri is down, we can't sum the list as it's dicts
-        all_people = prepa_people + ing_people + inter_people
-    except:
+        teachers = members_group("teachers", status_code=status_code)
+        # print(teachers, status_code[0])
+        administratives = members_group(
+            "administratives", status_code=status_code)
+        # print(administratives, status_code[0])
+        guests = members_group("guests", status_code=status_code)
+        # print(guests, status_code[0])
+        wheel = members_group("wheel", status_code=status_code)
+        # print(wheel, status_code[0])
+        ing = members_group("ing", status_code=status_code)
+        # print(ing, status_code[0])
+        prepa = members_group("prepa", status_code=status_code)
+        # print(prepa, status_code[0])
+        inter = members_group("inter", status_code=status_code)
+        # print(inter, status_code[0])
+
+        all_people = [] + teachers + administratives + \
+            guests + wheel + ing + prepa + inter
+
+    except Exception as inst:
+        print(inst)
         return None
 
     if not all_people:
         return None
 
+    all_people = np.array(all_people)
+
     logins = []
-    for e in all_people:
-        # remove all accents
-        login = unidecode(e["login"])
-        # split in First/Last name
-        login = login.split('.')
-        if len(login) == 2:
-            logins.append(login)
+
+    THREADS = 4
+    results = [[] for _ in range(THREADS)]
+    threads = [None] * THREADS
+
+    splitted_all_people = np.array_split(all_people, THREADS)
+
+    known_logins = {}
+    with open("./db/logins.json", 'r') as logins_file:
+        try:
+            known_logins = json.load(logins_file)
+        except:
+            pass
+
+    try:
+        for i, lst in enumerate(splitted_all_people):
+            threads[i] = Thread(target=format_logins,
+                                args=(lst, i, results[i], known_logins))
+            threads[i].start()
+
+        for i in range(THREADS):
+            threads[i].join()
+
+        with open("./db/logins.json", 'w') as logins_file:
+            json.dump(known_logins, logins_file)
+
+        logins = np.concatenate(results)
+
+    except Exception as inst:
+        print(inst)
 
     # Update the global var that stocks the names
-    global ALL_LOGINS
-    ALL_LOGINS = logins
 
-    global ALL_USERS
-    ALL_USERS = all_people
+    global ALL_LOGINS
+    ALL_LOGINS = logins if logins.size != 0 else ALL_LOGINS
 
     # Returns the json if needed
     return all_people

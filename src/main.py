@@ -1,3 +1,4 @@
+import logging
 import discord
 from discord.ext import commands
 import datetime
@@ -73,11 +74,13 @@ async def cron():
     while True:
         try:
             users = cri.get_all_users()
-            if not users:
+            if users.size == 0:
                 await asyncio.sleep(5 * 60)  # Sleeps 5 mins
             else:
-                await asyncio.sleep(24 * 60 * 60)  # Sleeps 1 day mins
+                await asyncio.sleep(1 * 24 * 60 * 60)  # Sleeps 1 day
         except Exception as e:
+            logging.exception("Something awful happened!")
+
             await disc.report(client, "Error in CRON loop", str(e))
             await asyncio.sleep(5 * 60)  # Sleeps 5 mins
 
