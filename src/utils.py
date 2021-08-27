@@ -234,7 +234,7 @@ async def search(self, message, args):
             best_jaro = jaro
             best_idx = i
 
-    # log("search", "PERSON = JARO", f"{cri.ALL_LOGINS["login"]}: {best_jaro}")
+    # log("search", "PERSON = JARO", f"{cri.ALL_LOGINS[best_idx]}: {best_jaro}")
     if best_jaro < 0.1:
         return
 

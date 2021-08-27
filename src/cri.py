@@ -142,12 +142,18 @@ def specific_campus(slug):
 
 
 def all_groups():
-    r = requests.get(
-        f"{base_url}/groups/?kind=semester&private=false", headers=auth)
-    try:
-        return r.json()
-    except:
-        return []
+    url = f"{base_url}/groups/?kind=semester&private=false?limit=1000"
+    res = []
+    while url != None:
+        r = requests.get(
+            url, headers=auth)
+        try:
+            js = r.json()
+            res += js["results"]
+            url = js["next"]
+        except:
+            pass
+    return res
 
 
 def specific_group(slug):
@@ -159,34 +165,55 @@ def specific_group(slug):
 
 
 def history_group(slug):
-    r = requests.get(f"{base_url}/groups/{slug}/history", headers=auth)
-    try:
-        return r.json()
-    except:
-        return []
+    url = f"{base_url}/groups/{slug}/history?limit=1000"
+    res = []
+    while url != None:
+        r = requests.get(
+            url, headers=auth)
+        try:
+            js = r.json()
+            res += js["results"]
+            url = js["next"]
+        except:
+            pass
+    return res
 
 
 def members_group(slug, status_code=None):
     if status_code and status_code[0] != 200:
         return []
+    url = f"{base_url}/groups/{slug}/members/?limit=1000"
+    res = []
 
-    r = requests.get(f"{base_url}/groups/{slug}/members/", headers=auth)
-    if status_code:
-        status_code[0] = r.status_code
-    try:
-        return r.json()
-    except:
-        return []
+    while url != None:
+        r = requests.get(url, headers=auth)
+        if status_code:
+            status_code[0] = r.status_code
+        try:
+            js = r.json()
+            res += js["results"]
+            url = js["next"]
+        except:
+            pass
+
+    return res
 
 # USERS
 
 
 def all_users():
-    r = requests.get(f"{base_url}/users/", headers=auth)
-    try:
-        return r.json()
-    except:
-        return []
+    url = f"{base_url}/users/?limit=1000"
+    res = []
+    while url != None:
+        r = requests.get(
+            url, headers=auth)
+        try:
+            js = r.json()
+            res += js["results"]
+            url = js["next"]
+        except:
+            pass
+    return res
 
 
 def self_user():
@@ -197,47 +224,47 @@ def self_user():
         return []
 
 
-def search_user(logins=None, uids=None, emails=None, firstnames=None,
-                lastnames=None, graduationyears=None, groups=None):
+# def search_user(logins=None, uids=None, emails=None, firstnames=None,
+#                 lastnames=None, graduationyears=None, groups=None):
 
-    request = "?"
-    if logins:
-        request += "logins="
-        request += ",".join(logins) + "&"
-    if uids:
-        request += "uids="
-        request += ",".join(uids) + "&"
-    if emails:
-        request += "emails="
-        request += ",".join(emails) + "&"
-    if firstnames:
-        request += "first_names="
-        request += ",".join(firstnames) + "&"
-    if lastnames:
-        request += "last_names="
-        request += ",".join(lastnames) + "&"
-    if lastnames:
-        request += "last_names="
-        request += ",".join(lastnames) + "&"
-    if graduationyears:
-        request += "graduation_years="
-        request += ",".join(graduationyears) + "&"
-    if groups:
-        request += "groups="
-        request += ",".join(groups) + "&"
+#     request = "?"
+#     if logins:
+#         request += "logins="
+#         request += ",".join(logins) + "&"
+#     if uids:
+#         request += "uids="
+#         request += ",".join(uids) + "&"
+#     if emails:
+#         request += "emails="
+#         request += ",".join(emails) + "&"
+#     if firstnames:
+#         request += "first_names="
+#         request += ",".join(firstnames) + "&"
+#     if lastnames:
+#         request += "last_names="
+#         request += ",".join(lastnames) + "&"
+#     if lastnames:
+#         request += "last_names="
+#         request += ",".join(lastnames) + "&"
+#     if graduationyears:
+#         request += "graduation_years="
+#         request += ",".join(graduationyears) + "&"
+#     if groups:
+#         request += "groups="
+#         request += ",".join(groups) + "&"
 
-    # remove last '&'
-    request = request[:-1]
+#     # remove last '&'
+#     request = request[:-1]
 
-    # Check if nothing was passed
-    if request == "?":
-        return []
+#     # Check if nothing was passed
+#     if request == "?":
+#         return []
 
-    r = requests.get(f"{base_url}/users/search/", headers=auth)
-    try:
-        return r.json()
-    except:
-        return []
+#     r = requests.get(f"{base_url}/users/search/?limit=1000", headers=auth)
+#     try:
+#         return r.json()
+#     except:
+#         return []
 
 
 def search_login(login):
@@ -317,6 +344,8 @@ def get_all_users():
         inter = members_group("inter", status_code=status_code)
         # print(inter, status_code[0])
 
+        assert(status_code[0] == 200)
+
         all_people = [] + teachers + administratives + \
             guests + wheel + ing + prepa + inter
 
@@ -364,6 +393,7 @@ def get_all_users():
     # Update the global var that stocks the names
 
     global ALL_LOGINS
+    print(len(logins))
     ALL_LOGINS = logins if logins.size != 0 else ALL_LOGINS
 
     # Returns the json if needed
