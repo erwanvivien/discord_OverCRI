@@ -285,9 +285,6 @@ def format_logins(lst, index, results, known_logins):
         login_str = unidecode(e["login"])
 
         if login_str in known_logins:
-            results.append({"first_name": known_logins[login_str][0],
-                            "last_name": known_logins[login_str][1],
-                            "login": login_str})
             continue
 
         # split in First/Last name
@@ -350,7 +347,7 @@ def get_all_users():
             guests + wheel + ing + prepa + inter
 
     except Exception as inst:
-        print(inst)
+        print("get_all_users: ", inst)
         return None
 
     if not all_people:
@@ -373,6 +370,12 @@ def get_all_users():
         except:
             pass
 
+    for k, v in known_logins.items():
+        logins.append(
+            {"last_name": v[1],
+             "first_name": v[0], "login": k}
+        )
+
     try:
         for i, lst in enumerate(splitted_all_people):
             threads[i] = Thread(target=format_logins,
@@ -385,7 +388,7 @@ def get_all_users():
         with open("./db/logins.json", 'w') as logins_file:
             json.dump(known_logins, logins_file)
 
-        logins = np.concatenate(results)
+        logins.extend(results[i])
 
     except Exception as inst:
         print(inst)
@@ -393,8 +396,7 @@ def get_all_users():
     # Update the global var that stocks the names
 
     global ALL_LOGINS
-    print(len(logins))
-    ALL_LOGINS = logins if logins.size != 0 else ALL_LOGINS
+    ALL_LOGINS = logins if logins and len(logins) != 0 else ALL_LOGINS
 
     # Returns the json if needed
     return all_people

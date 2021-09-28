@@ -163,6 +163,27 @@ async def get_login(self, message, args):
     await message.channel.send(image)
     await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
 
+    for l in cri.ALL_LOGINS:
+        if l["login"] == login:
+            return
+
+    known_logins = {}
+    with open("./db/logins.json", 'r') as logins_file:
+        try:
+            known_logins = json.load(logins_file)
+        except:
+            print("get_login:", "Could not open login file")
+            return
+
+    known_logins[login] = [unidecode(fname).lower(), unidecode(sname).lower()]
+    with open("./db/logins.json", 'w') as logins_file:
+        json.dump(known_logins, logins_file)
+
+    cri.ALL_LOGINS.append({
+        {"last_name": unidecode(sname).lower(),
+         "first_name": unidecode(fname).lower(), "login": login}
+    })
+
 
 async def get_random(self, message, args):
     rdm = random.choices(cri.ALL_LOGINS)[0]
