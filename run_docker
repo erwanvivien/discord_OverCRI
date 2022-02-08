@@ -1,13 +1,29 @@
 #!/bin/bash
 
+git remote update
+
+UPSTREAM=${1:-'@{u}'}
+LOCAL=$(git rev-parse @)
+REMOTE=$(git rev-parse "$UPSTREAM")
+BASE=$(git merge-base @ "$UPSTREAM")
+
 name=discordovercri
 
-git pull
 container_id=$(sudo docker container ls | grep "$name" | cut -d' ' -f1)
 if ! [ -z "$container_id" ]; then
-	sudo docker container stop $container_id
+    sudo docker container stop $container_id
 fi
-sudo docker image rm --force "$name"
-sudo docker build --no-cache -t "$name" .
-sudo docker run -d -v db_"$name"1:/app/db -v db_"$name"2:/app/assets/ "$name"
-# sudo docker run -it -v db_"$name"1:/app/db/ -v db_"$name"2:/app/assets/ "$name" /bin/bash
+
+if [ $LOCAL = $REMOTE ]; then
+    echo "Up-to-date"
+elif [ $LOCAL = $BASE ]; then
+    echo "Need to pull"
+    git pull
+    sudo docker image rm --force "$name"
+    sudo docker build --no-cache -t "$name" .
+fi
+
+echo "$name"
+
+name="discordovercri"; sudo docker run -d -v /root/discord_overcri/db:/app/db -v /root/discord_overcri/assets:/app/assets/ "$name"
+# sudo docker run -it -v /root/discord_overcri/db:/app/db/ -v /root/discord_overcri/assets:/app/assets/ "$name" /bin/bash
