@@ -267,7 +267,7 @@ async def search(self, message, args):
     msg1 = await message.channel.send(image)
     msg2 = await message.channel.send(f"`{fname} {lname} <{login}>`: https://cri.epita.fr/users/{login}/")
     
-    await msg1.add_reaction(emoji='❌')
+    await msg1.add_reaction(emoji='🗑️')
 
 
 async def map(self, message, args):
