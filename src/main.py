@@ -68,7 +68,7 @@ class Client(discord.Client):
             await CMDS['!!'](self, message, args)
 
     async def on_reaction_add(self, reaction, user):
-        if user.id in BOT_ID:
+        if user.id == BOT_ID:
             return
 
         # Debugging stuff
