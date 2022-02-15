@@ -264,8 +264,10 @@ async def search(self, message, args):
     login = cri.ALL_LOGINS[best_idx]["login"]
     image = f"https://photos.cri.epita.fr/thumb/{login}"
 
-    await message.channel.send(image)
-    await message.channel.send(f"`{fname} {lname} <{login}>`: https://cri.epita.fr/users/{login}/")
+    msg1 = await message.channel.send(image)
+    msg2 = await message.channel.send(f"`{fname} {lname} <{login}>`: https://cri.epita.fr/users/{login}/")
+    
+    await msg1.add_reaction(emoji='❌')
 
 
 async def map(self, message, args):
