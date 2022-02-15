@@ -73,7 +73,7 @@ class Client(discord.Client):
 
         # Debugging stuff
         print(f"{user} added a {reaction.emoji}")
-        if reaction.emoji in ['❌']:
+        if reaction.emoji in ['❌', '🗑️']:
             await reaction.message.delete()
 
 client = Client()
