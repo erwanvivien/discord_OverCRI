@@ -13,6 +13,8 @@ ERRORS = []
 DISC_LNK_DEV = "https://discord.com/api/oauth2/authorize?client_id=819549722422673448&permissions=2147544128&scope=bot%20applications.commands"
 DISC_LNK = "https://discord.com/api/oauth2/authorize?client_id=819549623172726824&permissions=2147544128&scope=bot%20applications.commands"
 
+BOT_ID = 819549623172726824
+
 token_file_name = "token"
 token = utils.get_content(token_file_name)
 
@@ -66,7 +68,7 @@ class Client(discord.Client):
             await CMDS['!!'](self, message, args)
 
     async def on_reaction_add(self, reaction, user):
-        if user.id in cmds.BOT_IDS:
+        if user.id in BOT_ID:
             return
 
         # Debugging stuff
