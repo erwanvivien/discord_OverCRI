@@ -13,6 +13,8 @@ ERRORS = []
 DISC_LNK_DEV = "https://discord.com/api/oauth2/authorize?client_id=819549722422673448&permissions=2147544128&scope=bot%20applications.commands"
 DISC_LNK = "https://discord.com/api/oauth2/authorize?client_id=819549623172726824&permissions=2147544128&scope=bot%20applications.commands"
 
+BOT_ID = 819549623172726824
+
 token_file_name = "token"
 token = utils.get_content(token_file_name)
 
@@ -65,6 +67,14 @@ class Client(discord.Client):
                       f"{name} from discord {message.guild.id} issued !! command. <{args}>")
             await CMDS['!!'](self, message, args)
 
+    async def on_reaction_add(self, reaction, user):
+        if user.id == BOT_ID:
+            return
+
+        # Debugging stuff
+        print(f"{user} added a {reaction.emoji}")
+        if reaction.emoji in ['❌', '🗑️']:
+            await reaction.message.delete()
 
 client = Client()
 
