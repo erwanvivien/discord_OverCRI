@@ -139,8 +139,10 @@ async def get_group_random(self, message, args):
     year = 2000  # We assume this bot will be old-school by 2100
     year += int(user["uid"] / 1000)
 
-    await message.channel.send(image)
+    msg = await message.channel.send(image)
     await message.channel.send(f"`{fname} {sname}`")
+
+    await msg.add_reaction(emoji='🗑️')
 
 
 async def get_login(self, message, args):
@@ -160,8 +162,10 @@ async def get_login(self, message, args):
     year = int(datetime.datetime.now().year / 100) * 100
     year += int(users["uid"] / 1000)
 
-    await message.channel.send(image)
+    msg = await message.channel.send(image)
     await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
+    
+    await msg.add_reaction(emoji='🗑️')
 
     for l in cri.ALL_LOGINS:
         if l["login"] == login:
@@ -201,9 +205,10 @@ async def get_random(self, message, args):
     year = int(datetime.datetime.now().year / 100) * 100
     year += int(user["uid"] / 1000)
 
-    await message.channel.send(image)
+    msg = await message.channel.send(image)
     await message.channel.send(f"`{fname} {sname}`\n`Promo {year}`")
-
+    
+    await msg.add_reaction(emoji='🗑️')
 
 def double_jaro(args, login):
     jaro = jaro_Winkler(args[0], login["first_name"])
@@ -232,7 +237,8 @@ async def search(self, message, args):
 
             path = CMD_MAP[args[0]][CMD_INDEX_URL]
             if path.split('.')[-1] == "txt":
-                await message.channel.send(get_content(path))
+                msg = await message.channel.send(get_content(path))
+                await msg.add_reaction(emoji='🗑️')
             else:
                 await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
             return
@@ -281,6 +287,7 @@ async def map(self, message, args):
         return await disc.error_message(message, title="This mapping already exists", desc="pass --force to overwrite this file")
 
     msg = await disc.send_message(message, title="Starting to download", desc="")
+    await msg.add_reaction(emoji='🗑️')
 
     if bind_to in CMD_MAP:
         os.remove(CMD_MAP[bind_to][CMD_INDEX_URL])
@@ -375,7 +382,8 @@ async def define(self, message, args):
 
 
 async def help(self, message, args):
-    await message.channel.send(embed=disc.HELP_EMBED)
+    msg = await message.channel.send(embed=disc.HELP_EMBED)
+    await msg.add_reaction(emoji='🗑️')
 
 
 async def ban(self, message, args):
