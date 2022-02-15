@@ -65,6 +65,14 @@ class Client(discord.Client):
                       f"{name} from discord {message.guild.id} issued !! command. <{args}>")
             await CMDS['!!'](self, message, args)
 
+    async def on_reaction_add(self, reaction, user):
+        if user.id in cmds.BOT_IDS:
+            return
+
+        # Debugging stuff
+        print(f"{user} added a {reaction.emoji}")
+        if reaction.emoji in ['❌']:
+            await reaction.message.delete()
 
 client = Client()
 
