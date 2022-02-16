@@ -240,7 +240,8 @@ async def search(self, message, args):
                 msg = await message.channel.send(get_content(path))
                 await msg.add_reaction(emoji='🗑️')
             else:
-                await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
+                msg = await disc.send_file(message, CMD_MAP[args[0]][CMD_INDEX_URL])
+                await msg.add_reaction(emoji='🗑️')
             return
         elif args[0].count(".") == 1:
             return await get_login(self, message, args)
