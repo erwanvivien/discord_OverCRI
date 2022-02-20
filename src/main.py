@@ -15,7 +15,7 @@ DISC_LNK = "https://discord.com/api/oauth2/authorize?client_id=81954962317272682
 
 BOT_ID = 819549623172726824
 
-token_file_name = "token"
+token_file_name = "token_dev"
 token = utils.get_content(token_file_name)
 
 CMDS = {
@@ -73,7 +73,7 @@ class Client(discord.Client):
 
         # Debugging stuff
         print(f"{user} added a {reaction.emoji}")
-        if reaction.emoji in ['❌', '🗑️']:
+        if reaction.emoji in ['❌', '🗑️'] and reaction.message.author.id == BOT_ID:
             await reaction.message.delete()
 
 client = Client()
