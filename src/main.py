@@ -15,7 +15,7 @@ DISC_LNK = "https://discord.com/api/oauth2/authorize?client_id=81954962317272682
 
 BOT_ID = 819549623172726824
 
-token_file_name = "token_dev"
+token_file_name = "token"
 token = utils.get_content(token_file_name)
 
 CMDS = {
