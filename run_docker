@@ -20,7 +20,7 @@ elif [ $LOCAL = $BASE ]; then
     echo "Need to pull"
     git pull
     sudo docker image rm --force "$name"
-    sudo docker build --no-cache -t "$name" .
+    sudo docker build -t "$name" .
 fi
 
 echo "$name"
