@@ -29,11 +29,11 @@ async fn check_mapping_exist(id: &str) -> bool {
     let hashmap = HASHMAP.lock().await;
     let value = hashmap.get(id);
 
-    return value.is_some();
+    value.is_some()
 }
 
 fn check_command(command: Option<&str>, expect: &str) -> bool {
-    return command.is_some() && command.unwrap() == expect;
+    command.is_some() && command.unwrap() == expect
 }
 
 macro_rules! get_content {
@@ -81,7 +81,7 @@ impl EventHandler for Handler {
         if msg.content == "!!help" {
             let _ = msg.reply(&ctx, "TODO: Help message").await;
         } else if msg.content.starts_with("!!map") {
-            let mut options = msg.content.split(" ");
+            let mut options = msg.content.split(' ');
             if !check_command(options.next(), "!!map") {
                 return;
             }
@@ -103,7 +103,7 @@ impl EventHandler for Handler {
 
             let _ = msg.reply(&ctx, message).await;
         } else if msg.content.starts_with("!!remap") {
-            let mut options = msg.content.split(" ");
+            let mut options = msg.content.split(' ');
             if !check_command(options.next(), "!!remap") {
                 return;
             }
@@ -125,7 +125,7 @@ impl EventHandler for Handler {
 
             let _ = msg.reply(&ctx, message).await;
         } else if msg.content.starts_with("!!delete") {
-            let mut options = msg.content.split(" ");
+            let mut options = msg.content.split(' ');
             if !check_command(options.next(), "!!delete") {
                 return;
             }
@@ -147,9 +147,9 @@ impl EventHandler for Handler {
             let _ = msg.reply(&ctx, message).await;
         } else {
             // Handle identifiers
-            let options = msg.content.split("!!");
+            let mut options = msg.content.split("!!").skip(1);
 
-            let command = options.skip(1).next();
+            let command = options.next();
             if command.is_none() {
                 return;
             }
