@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::env;
+use std::sync::Arc;
 
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
@@ -16,10 +17,11 @@ struct General;
 struct Handler;
 
 lazy_static! {
-    static ref HASHMAP: Mutex<HashMap<String, String>> = {
+    static ref HASHMAP: Arc<Mutex<HashMap<String, String>>> = {
         let m = ron::from_str("{}").expect("Could not parse starting state");
 
-        Mutex::new(m)
+        let mutex = Mutex::new(m);
+        Arc::new(mutex)
     };
 }
 
@@ -38,9 +40,13 @@ impl EventHandler for Handler {
             if let Err(why) = msg.reply(&ctx, "TODO: Help message").await {
                 println!("Error sending message: {:?}", why);
             }
-        } else if msg.content.starts_with("!!map ") {
-            // Skip the command
-            let mut options = msg.content.split(" ").skip(1);
+        } else if msg.content.starts_with("!!map") {
+            let mut options = msg.content.split(" ");
+            let command = options.next();
+            if command.is_none() || command.unwrap() != "!!map" {
+                return;
+            }
+
             // Get id
             let id = options.next();
             if id.is_none() {
@@ -51,14 +57,18 @@ impl EventHandler for Handler {
 
             let id = id.unwrap();
 
-            let hashmap = HASHMAP.lock().await;
-            let value = hashmap.get(id);
+            // This allows the HASHMAP to free itself after scope
+            {
+                let hashmap = HASHMAP.lock().await;
+                let value = hashmap.get(id);
 
-            if value.is_some() {
-                const MESSAGE: &str = "Missing identifier. `Usage: !!map <id> <content>`";
-                dbg!(&MESSAGE);
-                let _ = msg.reply(&ctx, MESSAGE).await;
-                return;
+                if value.is_some() {
+                    const MESSAGE: &str =
+                        "Identifier already exists. `Usage: !!remap <id> <content>`";
+                    dbg!(&MESSAGE);
+                    let _ = msg.reply(&ctx, MESSAGE).await;
+                    return;
+                }
             }
 
             let content = options.collect::<Vec<_>>();
@@ -73,12 +83,7 @@ impl EventHandler for Handler {
             let message = format!("Mapped {id} to `{content}`. You can use `!!{id}`");
 
             let mut hashmap = HASHMAP.lock().await;
-            dbg!("All good");
             hashmap.insert(String::from(id), content);
-            dbg!("All good");
-            let _ = hashmap;
-
-            dbg!("All good");
 
             let _ = msg.reply(&ctx, message).await;
         }
