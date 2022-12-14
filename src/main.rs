@@ -164,7 +164,7 @@ impl EventHandler for Handler {
                 None => format!("`!!{command}` does not exist"),
             };
 
-            let _ = msg.reply(&ctx, message);
+            let _ = msg.reply(&ctx, message).await;
         }
     }
 }
