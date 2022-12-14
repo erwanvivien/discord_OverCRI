@@ -6,6 +6,7 @@ use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::model::channel::Message;
+use serenity::model::prelude::GuildId;
 use serenity::prelude::*;
 
 use lazy_static::lazy_static;
@@ -16,8 +17,10 @@ struct General;
 
 struct Handler;
 
+type ServerMap = HashMap<GuildId, HashMap<String, String>>;
+
 lazy_static! {
-    static ref HASHMAP: Arc<Mutex<HashMap<String, String>>> = {
+    static ref HASHMAP: Arc<Mutex<ServerMap>> = {
         let try_bytes = std::fs::read("db/map.ron");
         let bytes = match &try_bytes {
             Ok(bytes) => bytes.clone(),
@@ -28,18 +31,20 @@ lazy_static! {
         };
 
         let map = ron::de::from_bytes(&bytes).expect("Could not parse input");
-        dbg!(&map);
 
         let mutex = Mutex::new(map);
         Arc::new(mutex)
     };
 }
 
-async fn check_mapping_exist(id: &str) -> bool {
-    let hashmap = HASHMAP.lock().await;
-    let value = hashmap.get(id);
+async fn check_mapping_exist(gid: &GuildId, id: &str) -> bool {
+    let server_hashmap = HASHMAP.lock().await;
+    let hashmap = server_hashmap.get(gid);
 
-    value.is_some()
+    match hashmap {
+        Some(hashmap) => hashmap.get(id).is_some(),
+        None => false,
+    }
 }
 
 fn check_command(command: Option<&str>, expect: &str) -> bool {
@@ -88,6 +93,16 @@ impl EventHandler for Handler {
             return;
         }
 
+        let guild_id = match msg.guild_id {
+            Some(guild) => guild,
+            None => {
+                const MESSAGE: &str = "Message was not from a discord server";
+                dbg!(&MESSAGE);
+                let _ = msg.reply(&ctx, MESSAGE).await;
+                return;
+            }
+        };
+
         if msg.content == "!!help" {
             let _ = msg.reply(&ctx, "TODO: Help message").await;
         } else if msg.content.starts_with("!!map") {
@@ -98,7 +113,7 @@ impl EventHandler for Handler {
 
             // Get id
             let id = get_id!(options, msg, ctx, "map");
-            if check_mapping_exist(id).await {
+            if check_mapping_exist(&guild_id, id).await {
                 const MESSAGE: &str = "Identifier already exists. `Usage: !!remap <id> <content>`";
                 dbg!(&MESSAGE);
                 let _ = msg.reply(&ctx, MESSAGE).await;
@@ -108,11 +123,19 @@ impl EventHandler for Handler {
             let content = get_content!(options, msg, ctx, "map");
             let message = format!("Mapped `!!{id}` to `{content}`. You can use `!!{id}`");
 
-            let mut hashmap = HASHMAP.lock().await;
-            hashmap.insert(String::from(id), content);
+            let mut server_hashmap = HASHMAP.lock().await;
+            let mut hashmap = server_hashmap.get(&guild_id).map(|x| x.to_owned());
+            match &mut hashmap {
+                Some(hashmap) => {
+                    hashmap.insert(String::from(id), content);
+                }
+                None => {
+                    server_hashmap.insert(guild_id, HashMap::from([(String::from(id), content)]));
+                }
+            }
 
             let _ = msg.reply(&ctx, message).await;
-            let str = ron::to_string(&hashmap.clone());
+            let str = ron::to_string(&server_hashmap.clone());
             if let Ok(str) = str {
                 let _ = tokio::fs::write("db/map.ron", str).await;
             }
@@ -124,7 +147,7 @@ impl EventHandler for Handler {
 
             // Get id
             let id = get_id!(options, msg, ctx, "remap");
-            if !check_mapping_exist(id).await {
+            if !check_mapping_exist(&guild_id, id).await {
                 const MESSAGE: &str = "Identifier doesn't exist. `Usage: !!map <id> <content>`";
                 dbg!(&MESSAGE);
                 let _ = msg.reply(&ctx, MESSAGE).await;
@@ -134,11 +157,20 @@ impl EventHandler for Handler {
             let content = get_content!(options, msg, ctx, "remap");
             let message = format!("Remapped `!!{id}` to `{content}`. You can use `!!{id}`");
 
-            let mut hashmap = HASHMAP.lock().await;
-            hashmap.insert(String::from(id), content);
+            // let mut hashmap = HASHMAP.lock().await;
+            // hashmap.insert(String::from(id), content);
+
+            let mut server_hashmap = HASHMAP.lock().await;
+            let hashmap = server_hashmap.get_mut(&guild_id);
+            match hashmap {
+                Some(hashmap) => {
+                    hashmap.insert(String::from(id), content);
+                }
+                None => (),
+            }
 
             let _ = msg.reply(&ctx, message).await;
-            let str = ron::to_string(&hashmap.clone());
+            let str = ron::to_string(&server_hashmap.clone());
             if let Ok(str) = str {
                 let _ = tokio::fs::write("db/map.ron", str).await;
             }
@@ -150,7 +182,7 @@ impl EventHandler for Handler {
 
             // Get id
             let id = get_id!(options, msg, ctx, "delete", false);
-            if !check_mapping_exist(id).await {
+            if !check_mapping_exist(&guild_id, id).await {
                 const MESSAGE: &str = "Identifier doesn't exist.";
                 dbg!(&MESSAGE);
                 let _ = msg.reply(&ctx, MESSAGE).await;
@@ -159,11 +191,17 @@ impl EventHandler for Handler {
 
             let message = format!("Deleted `!!{id}`");
 
-            let mut hashmap = HASHMAP.lock().await;
-            hashmap.remove(id);
+            let mut server_hashmap = HASHMAP.lock().await;
+            let hashmap = server_hashmap.get_mut(&guild_id);
+            match hashmap {
+                Some(hashmap) => {
+                    hashmap.remove(id);
+                }
+                None => (),
+            }
 
             let _ = msg.reply(&ctx, message).await;
-            let str = ron::to_string(&hashmap.clone());
+            let str = ron::to_string(&server_hashmap.clone());
             if let Ok(str) = str {
                 let _ = tokio::fs::write("db/map.ron", str).await;
             }
@@ -178,8 +216,13 @@ impl EventHandler for Handler {
 
             let command = command.unwrap().trim();
 
-            let hashmap = HASHMAP.lock().await;
-            let value = hashmap.get(command);
+            let server_hashmap = HASHMAP.lock().await;
+            let hashmap = server_hashmap.get(&guild_id);
+
+            let value = match hashmap {
+                Some(hashmap) => hashmap.get(command),
+                None => None,
+            };
 
             let message = match value {
                 Some(value) => value.clone(),
