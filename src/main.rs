@@ -148,6 +148,23 @@ impl EventHandler for Handler {
             None => (),
         };
     }
+
+    async fn reaction_add(&self, ctx: Context, reaction: Reaction) {
+        let message = reaction.message(&ctx).await.unwrap();
+        let user = message.author.id;
+
+        const BOT_ID: UserId = UserId(819549623172726824);
+
+        if user != BOT_ID {
+            return;
+        }
+
+        if reaction.emoji == ReactionType::Unicode(String::from("🗑️"))
+            && reaction.user_id != Some(BOT_ID)
+        {
+            let _ = message.delete(&ctx).await;
+        }
+    }
 }
 
 #[tokio::main]
