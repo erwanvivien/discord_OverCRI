@@ -157,9 +157,6 @@ impl EventHandler for Handler {
             let content = get_content!(options, msg, ctx, "remap");
             let message = format!("Remapped `!!{id}` to `{content}`. You can use `!!{id}`");
 
-            // let mut hashmap = HASHMAP.lock().await;
-            // hashmap.insert(String::from(id), content);
-
             let mut server_hashmap = HASHMAP.lock().await;
             let hashmap = server_hashmap.get_mut(&guild_id);
             match hashmap {
