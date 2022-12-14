@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::env;
-use std::str::Split;
 use std::sync::Arc;
 
 use serenity::async_trait;
@@ -160,15 +159,12 @@ impl EventHandler for Handler {
             let hashmap = HASHMAP.lock().await;
             let value = hashmap.get(command);
 
-            match value {
-                Some(value) => {
-                    let _ = msg.reply(&ctx, value).await;
-                }
-                None => {
-                    let message = format!("`!!{command}` does not exist");
-                    let _ = msg.reply(&ctx, message).await;
-                }
+            let message = match value {
+                Some(value) => value.clone(),
+                None => format!("`!!{command}` does not exist"),
             };
+
+            let _ = msg.reply(&ctx, message);
         }
     }
 }
