@@ -124,8 +124,8 @@ impl EventHandler for Handler {
             let message = format!("Mapped `!!{id}` to `{content}`. You can use `!!{id}`");
 
             let mut server_hashmap = HASHMAP.lock().await;
-            let mut hashmap = server_hashmap.get(&guild_id).map(|x| x.to_owned());
-            match &mut hashmap {
+            let hashmap = server_hashmap.get_mut(&guild_id);
+            match hashmap {
                 Some(hashmap) => {
                     hashmap.insert(String::from(id), content);
                 }
