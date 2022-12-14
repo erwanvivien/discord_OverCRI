@@ -18,9 +18,19 @@ struct Handler;
 
 lazy_static! {
     static ref HASHMAP: Arc<Mutex<HashMap<String, String>>> = {
-        let m = ron::from_str("{}").expect("Could not parse starting state");
+        let try_bytes = std::fs::read("db/map.ron");
+        let bytes = match &try_bytes {
+            Ok(bytes) => bytes.clone(),
+            Err(_err) => {
+                let _ = std::fs::write("db/map.ron", "");
+                vec!['{' as u8, '}' as u8]
+            }
+        };
 
-        let mutex = Mutex::new(m);
+        let map = ron::de::from_bytes(&bytes).expect("Could not parse input");
+        dbg!(&map);
+
+        let mutex = Mutex::new(map);
         Arc::new(mutex)
     };
 }
@@ -102,6 +112,10 @@ impl EventHandler for Handler {
             hashmap.insert(String::from(id), content);
 
             let _ = msg.reply(&ctx, message).await;
+            let str = ron::to_string(&hashmap.clone());
+            if let Ok(str) = str {
+                let _ = tokio::fs::write("db/map.ron", str).await;
+            }
         } else if msg.content.starts_with("!!remap") {
             let mut options = msg.content.split(' ');
             if !check_command(options.next(), "!!remap") {
@@ -124,6 +138,10 @@ impl EventHandler for Handler {
             hashmap.insert(String::from(id), content);
 
             let _ = msg.reply(&ctx, message).await;
+            let str = ron::to_string(&hashmap.clone());
+            if let Ok(str) = str {
+                let _ = tokio::fs::write("db/map.ron", str).await;
+            }
         } else if msg.content.starts_with("!!delete") {
             let mut options = msg.content.split(' ');
             if !check_command(options.next(), "!!delete") {
@@ -145,6 +163,10 @@ impl EventHandler for Handler {
             hashmap.remove(id);
 
             let _ = msg.reply(&ctx, message).await;
+            let str = ron::to_string(&hashmap.clone());
+            if let Ok(str) = str {
+                let _ = tokio::fs::write("db/map.ron", str).await;
+            }
         } else {
             // Handle identifiers
             let mut options = msg.content.split("!!").skip(1);
