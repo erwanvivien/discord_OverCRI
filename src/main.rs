@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::env;
+use std::str::Split;
 use std::sync::Arc;
 
 use serenity::async_trait;
@@ -25,6 +26,52 @@ lazy_static! {
     };
 }
 
+async fn check_mapping_exist(id: &str) -> bool {
+    let hashmap = HASHMAP.lock().await;
+    let value = hashmap.get(id);
+
+    return value.is_some();
+}
+
+fn check_command(command: Option<&str>, expect: &str) -> bool {
+    return command.is_some() && command.unwrap() == expect;
+}
+
+macro_rules! get_content {
+    ($args:ident, $msg:ident, $ctx:ident, $text :literal) => {{
+        let content = $args.collect::<Vec<_>>();
+        if content.len() == 0 {
+            const MESSAGE: &str = concat!("Missing content. `Usage: !!", $text, " <id> <content>`");
+            dbg!(&MESSAGE);
+            let _ = $msg.reply(&$ctx, MESSAGE).await;
+            return;
+        }
+
+        content.join(" ")
+    }};
+}
+
+macro_rules! get_id {
+    ($args:ident, $msg:ident, $ctx:ident, $text:literal) => {{
+        get_id!($args, $msg, $ctx, $text, true)
+    }};
+
+    ($args:ident, $msg:ident, $ctx:ident, $text:literal, $is_content:literal) => {{
+        let id = $args.next();
+        if id.is_none() {
+            const MESSAGE: &str = if $is_content {
+                concat!("Missing identifier. `Usage: !!", $text, " <id> <content>`")
+            } else {
+                concat!("Missing identifier. `Usage: !!", $text, " <id>`")
+            };
+            let _ = $msg.reply(&$ctx, MESSAGE).await;
+            return;
+        }
+
+        id.unwrap()
+    }};
+}
+
 #[async_trait]
 impl EventHandler for Handler {
     async fn message(&self, ctx: Context, msg: Message) {
@@ -32,54 +79,24 @@ impl EventHandler for Handler {
             return;
         }
 
-        // let tmp = HASHMAP.lock().await;
-        // let value = tmp.get("Hihi".into());
-        // let _ = tmp;
-
         if msg.content == "!!help" {
-            if let Err(why) = msg.reply(&ctx, "TODO: Help message").await {
-                println!("Error sending message: {:?}", why);
-            }
+            let _ = msg.reply(&ctx, "TODO: Help message").await;
         } else if msg.content.starts_with("!!map") {
             let mut options = msg.content.split(" ");
-            let command = options.next();
-            if command.is_none() || command.unwrap() != "!!map" {
+            if !check_command(options.next(), "!!map") {
                 return;
             }
 
             // Get id
-            let id = options.next();
-            if id.is_none() {
-                const MESSAGE: &str = "Missing identifier. `Usage: !!map <id> <content>`";
-                let _ = msg.reply(&ctx, MESSAGE).await;
-                return;
-            }
-
-            let id = id.unwrap();
-
-            // This allows the HASHMAP to free itself after scope
-            {
-                let hashmap = HASHMAP.lock().await;
-                let value = hashmap.get(id);
-
-                if value.is_some() {
-                    const MESSAGE: &str =
-                        "Identifier already exists. `Usage: !!remap <id> <content>`";
-                    dbg!(&MESSAGE);
-                    let _ = msg.reply(&ctx, MESSAGE).await;
-                    return;
-                }
-            }
-
-            let content = options.collect::<Vec<_>>();
-            if content.len() == 0 {
-                const MESSAGE: &str = "Missing content. `Usage: !!map <id> <content>`";
+            let id = get_id!(options, msg, ctx, "map");
+            if check_mapping_exist(id).await {
+                const MESSAGE: &str = "Identifier already exists. `Usage: !!remap <id> <content>`";
                 dbg!(&MESSAGE);
                 let _ = msg.reply(&ctx, MESSAGE).await;
                 return;
             }
 
-            let content = content.join(" ");
+            let content = get_content!(options, msg, ctx, "map");
             let message = format!("Mapped `!!{id}` to `{content}`. You can use `!!{id}`");
 
             let mut hashmap = HASHMAP.lock().await;
@@ -88,43 +105,20 @@ impl EventHandler for Handler {
             let _ = msg.reply(&ctx, message).await;
         } else if msg.content.starts_with("!!remap") {
             let mut options = msg.content.split(" ");
-            let command = options.next();
-            if command.is_none() || command.unwrap() != "!!remap" {
+            if !check_command(options.next(), "!!remap") {
                 return;
             }
 
             // Get id
-            let id = options.next();
-            if id.is_none() {
-                const MESSAGE: &str = "Missing identifier. `Usage: !!remap <id> <content>`";
-                let _ = msg.reply(&ctx, MESSAGE).await;
-                return;
-            }
-
-            let id = id.unwrap();
-
-            // This allows the HASHMAP to free itself after scope
-            {
-                let hashmap = HASHMAP.lock().await;
-                let value = hashmap.get(id);
-
-                if value.is_none() {
-                    const MESSAGE: &str = "Identifier doesn't exist. `Usage: !!map <id> <content>`";
-                    dbg!(&MESSAGE);
-                    let _ = msg.reply(&ctx, MESSAGE).await;
-                    return;
-                }
-            }
-
-            let content = options.collect::<Vec<_>>();
-            if content.len() == 0 {
-                const MESSAGE: &str = "Missing content. `Usage: !!remap <id> <content>`";
+            let id = get_id!(options, msg, ctx, "remap");
+            if !check_mapping_exist(id).await {
+                const MESSAGE: &str = "Identifier doesn't exist. `Usage: !!map <id> <content>`";
                 dbg!(&MESSAGE);
                 let _ = msg.reply(&ctx, MESSAGE).await;
                 return;
             }
 
-            let content = content.join(" ");
+            let content = get_content!(options, msg, ctx, "remap");
             let message = format!("Remapped `!!{id}` to `{content}`. You can use `!!{id}`");
 
             let mut hashmap = HASHMAP.lock().await;
@@ -133,26 +127,13 @@ impl EventHandler for Handler {
             let _ = msg.reply(&ctx, message).await;
         } else if msg.content.starts_with("!!delete") {
             let mut options = msg.content.split(" ");
-            let command = options.next();
-            if command.is_none() || command.unwrap() != "!!delete" {
+            if !check_command(options.next(), "!!delete") {
                 return;
             }
 
             // Get id
-            let id = options.next();
-            if id.is_none() {
-                const MESSAGE: &str = "Missing identifier. `Usage: !!delete <id>`";
-                let _ = msg.reply(&ctx, MESSAGE).await;
-                return;
-            }
-
-            let id = id.unwrap();
-
-            // This allows the HASHMAP to free itself after scope
-            let mut hashmap = HASHMAP.lock().await;
-            let value = hashmap.get(id);
-
-            if value.is_none() {
+            let id = get_id!(options, msg, ctx, "delete", false);
+            if !check_mapping_exist(id).await {
                 const MESSAGE: &str = "Identifier doesn't exist.";
                 dbg!(&MESSAGE);
                 let _ = msg.reply(&ctx, MESSAGE).await;
@@ -161,6 +142,7 @@ impl EventHandler for Handler {
 
             let message = format!("Deleted `!!{id}`");
 
+            let mut hashmap = HASHMAP.lock().await;
             hashmap.remove(id);
 
             let _ = msg.reply(&ctx, message).await;
