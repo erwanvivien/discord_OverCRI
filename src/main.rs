@@ -6,13 +6,13 @@ use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::model::channel::Message;
-use serenity::model::prelude::GuildId;
+use serenity::model::prelude::{GuildId, Reaction, ReactionType, UserId};
 use serenity::prelude::*;
 
 use lazy_static::lazy_static;
 
 #[group]
-#[commands(ping)]
+#[commands(help, map, remap, delete)]
 struct General;
 
 struct Handler;
@@ -58,7 +58,7 @@ macro_rules! get_content {
             const MESSAGE: &str = concat!("Missing content. `Usage: !!", $text, " <id> <content>`");
             dbg!(&MESSAGE);
             let _ = $msg.reply(&$ctx, MESSAGE).await;
-            return;
+            return Ok(());
         }
 
         content.join(" ")
@@ -79,11 +79,25 @@ macro_rules! get_id {
                 concat!("Missing identifier. `Usage: !!", $text, " <id>`")
             };
             let _ = $msg.reply(&$ctx, MESSAGE).await;
-            return;
+            return Ok(());
         }
 
         id.unwrap()
     }};
+}
+
+macro_rules! get_guild {
+    ($msg: ident, $ctx: ident) => {
+        match $msg.guild_id {
+            Some(guild) => guild,
+            None => {
+                const MESSAGE: &str = "Message was not from a discord server";
+                dbg!(&MESSAGE);
+                let _ = $msg.reply(&$ctx, MESSAGE).await;
+                return Ok(());
+            }
+        }
+    };
 }
 
 #[async_trait]
@@ -103,138 +117,43 @@ impl EventHandler for Handler {
             }
         };
 
-        if msg.content == "!!help" {
-            let _ = msg.reply(&ctx, "TODO: Help message").await;
-        } else if msg.content.starts_with("!!map") {
-            let mut options = msg.content.split(' ');
-            if !check_command(options.next(), "!!map") {
-                return;
-            }
+        // Handle identifiers
+        let mut options = msg.content.split("!!").skip(1);
 
-            // Get id
-            let id = get_id!(options, msg, ctx, "map");
-            if check_mapping_exist(&guild_id, id).await {
-                const MESSAGE: &str = "Identifier already exists. `Usage: !!remap <id> <content>`";
-                dbg!(&MESSAGE);
-                let _ = msg.reply(&ctx, MESSAGE).await;
-                return;
-            }
-
-            let content = get_content!(options, msg, ctx, "map");
-            let message = format!("Mapped `!!{id}` to `{content}`. You can use `!!{id}`");
-
-            let mut server_hashmap = HASHMAP.lock().await;
-            let hashmap = server_hashmap.get_mut(&guild_id);
-            match hashmap {
-                Some(hashmap) => {
-                    hashmap.insert(String::from(id), content);
-                }
-                None => {
-                    server_hashmap.insert(guild_id, HashMap::from([(String::from(id), content)]));
-                }
-            }
-
-            let _ = msg.reply(&ctx, message).await;
-            let str = ron::to_string(&server_hashmap.clone());
-            if let Ok(str) = str {
-                let _ = tokio::fs::write("db/map.ron", str).await;
-            }
-        } else if msg.content.starts_with("!!remap") {
-            let mut options = msg.content.split(' ');
-            if !check_command(options.next(), "!!remap") {
-                return;
-            }
-
-            // Get id
-            let id = get_id!(options, msg, ctx, "remap");
-            if !check_mapping_exist(&guild_id, id).await {
-                const MESSAGE: &str = "Identifier doesn't exist. `Usage: !!map <id> <content>`";
-                dbg!(&MESSAGE);
-                let _ = msg.reply(&ctx, MESSAGE).await;
-                return;
-            }
-
-            let content = get_content!(options, msg, ctx, "remap");
-            let message = format!("Remapped `!!{id}` to `{content}`. You can use `!!{id}`");
-
-            let mut server_hashmap = HASHMAP.lock().await;
-            let hashmap = server_hashmap.get_mut(&guild_id);
-            match hashmap {
-                Some(hashmap) => {
-                    hashmap.insert(String::from(id), content);
-                }
-                None => (),
-            }
-
-            let _ = msg.reply(&ctx, message).await;
-            let str = ron::to_string(&server_hashmap.clone());
-            if let Ok(str) = str {
-                let _ = tokio::fs::write("db/map.ron", str).await;
-            }
-        } else if msg.content.starts_with("!!delete") {
-            let mut options = msg.content.split(' ');
-            if !check_command(options.next(), "!!delete") {
-                return;
-            }
-
-            // Get id
-            let id = get_id!(options, msg, ctx, "delete", false);
-            if !check_mapping_exist(&guild_id, id).await {
-                const MESSAGE: &str = "Identifier doesn't exist.";
-                dbg!(&MESSAGE);
-                let _ = msg.reply(&ctx, MESSAGE).await;
-                return;
-            }
-
-            let message = format!("Deleted `!!{id}`");
-
-            let mut server_hashmap = HASHMAP.lock().await;
-            let hashmap = server_hashmap.get_mut(&guild_id);
-            match hashmap {
-                Some(hashmap) => {
-                    hashmap.remove(id);
-                }
-                None => (),
-            }
-
-            let _ = msg.reply(&ctx, message).await;
-            let str = ron::to_string(&server_hashmap.clone());
-            if let Ok(str) = str {
-                let _ = tokio::fs::write("db/map.ron", str).await;
-            }
-        } else {
-            // Handle identifiers
-            let mut options = msg.content.split("!!").skip(1);
-
-            let command = options.next();
-            if command.is_none() {
-                return;
-            }
-
-            let command = command.unwrap().trim();
-
-            let server_hashmap = HASHMAP.lock().await;
-            let hashmap = server_hashmap.get(&guild_id);
-
-            let value = match hashmap {
-                Some(hashmap) => hashmap.get(command),
-                None => None,
-            };
-
-            let message = match value {
-                Some(value) => value.clone(),
-                None => format!("`!!{command}` does not exist"),
-            };
-
-            let _ = msg.reply(&ctx, message).await;
+        let command = options.next();
+        if command.is_none() {
+            return;
         }
+
+        let command = command.unwrap().trim();
+
+        let server_hashmap = HASHMAP.lock().await;
+        let hashmap = server_hashmap.get(&guild_id);
+
+        let value = match hashmap {
+            Some(hashmap) => hashmap.get(command),
+            None => None,
+        };
+
+        match value {
+            Some(message) => {
+                let tmp = msg.reply(&ctx, message).await;
+
+                if let Ok(message) = tmp {
+                    let _ = message
+                        .react(&ctx, ReactionType::Unicode(String::from("🗑️")))
+                        .await;
+                }
+            }
+            None => (),
+        };
     }
 }
 
 #[tokio::main]
 async fn main() {
     let framework = StandardFramework::new()
-        .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
+        .configure(|c| c.prefix("!!")) // set the bot's prefix to "!!"
         .group(&GENERAL_GROUP);
 
     // Login with a bot token from the environment
@@ -254,8 +173,131 @@ async fn main() {
 
 #[command]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
-    dbg!(&msg);
     msg.reply(ctx, "Pong!").await?;
 
+    Ok(())
+}
+
+#[command]
+async fn remap(ctx: &Context, msg: &Message) -> CommandResult {
+    let guild_id = get_guild!(msg, ctx);
+
+    let mut options = msg.content.split(' ');
+    if !check_command(options.next(), "!!remap") {
+        return Ok(());
+    }
+
+    // Get id
+    let id = get_id!(options, msg, ctx, "remap");
+    if !check_mapping_exist(&guild_id, id).await {
+        const MESSAGE: &str = "Identifier doesn't exist. `Usage: !!map <id> <content>`";
+        dbg!(&MESSAGE);
+        let _ = msg.reply(&ctx, MESSAGE).await;
+        return Ok(());
+    }
+
+    let content = get_content!(options, msg, ctx, "remap");
+    let message = format!("Remapped `!!{id}` to `{content}`. You can use `!!{id}`");
+
+    let mut server_hashmap = HASHMAP.lock().await;
+    let hashmap = server_hashmap.get_mut(&guild_id);
+    match hashmap {
+        Some(hashmap) => {
+            hashmap.insert(String::from(id), content);
+        }
+        None => (),
+    }
+
+    msg.reply(&ctx, message).await?;
+    let str = ron::to_string(&server_hashmap.clone());
+    if let Ok(str) = str {
+        let _ = tokio::fs::write("db/map.ron", str).await;
+    }
+
+    Ok(())
+}
+
+#[command]
+async fn map(ctx: &Context, msg: &Message) -> CommandResult {
+    let guild_id = get_guild!(msg, ctx);
+
+    let mut options = msg.content.split(' ');
+    if !check_command(options.next(), "!!map") {
+        return Ok(());
+    }
+
+    // Get id
+    let id = get_id!(options, msg, ctx, "map");
+    if check_mapping_exist(&guild_id, id).await {
+        const MESSAGE: &str = "Identifier already exists. `Usage: !!remap <id> <content>`";
+        dbg!(&MESSAGE);
+        let _ = msg.reply(&ctx, MESSAGE).await;
+        return Ok(());
+    }
+
+    let content = get_content!(options, msg, ctx, "map");
+    let message = format!("Mapped `!!{id}` to `{content}`. You can use `!!{id}`");
+
+    let mut server_hashmap = HASHMAP.lock().await;
+    let hashmap = server_hashmap.get_mut(&guild_id);
+    match hashmap {
+        Some(hashmap) => {
+            hashmap.insert(String::from(id), content);
+        }
+        None => {
+            server_hashmap.insert(guild_id, HashMap::from([(String::from(id), content)]));
+        }
+    }
+
+    let _ = msg.reply(&ctx, message).await;
+    let str = ron::to_string(&server_hashmap.clone());
+    if let Ok(str) = str {
+        let _ = tokio::fs::write("db/map.ron", str).await;
+    }
+
+    Ok(())
+}
+
+#[command]
+async fn delete(ctx: &Context, msg: &Message) -> CommandResult {
+    let guild_id = get_guild!(msg, ctx);
+
+    let mut options = msg.content.split(' ');
+    if !check_command(options.next(), "!!delete") {
+        return Ok(());
+    }
+
+    // Get id
+    let id = get_id!(options, msg, ctx, "delete", false);
+    if !check_mapping_exist(&guild_id, id).await {
+        const MESSAGE: &str = "Identifier doesn't exist.";
+        dbg!(&MESSAGE);
+        let _ = msg.reply(&ctx, MESSAGE).await;
+        return Ok(());
+    }
+
+    let message = format!("Deleted `!!{id}`");
+
+    let mut server_hashmap = HASHMAP.lock().await;
+    let hashmap = server_hashmap.get_mut(&guild_id);
+    match hashmap {
+        Some(hashmap) => {
+            hashmap.remove(id);
+        }
+        None => (),
+    }
+
+    let _ = msg.reply(&ctx, message).await;
+    let str = ron::to_string(&server_hashmap.clone());
+    if let Ok(str) = str {
+        let _ = tokio::fs::write("db/map.ron", str).await;
+    }
+
+    Ok(())
+}
+
+#[command]
+async fn help(ctx: &Context, msg: &Message) -> CommandResult {
+    let _ = msg.reply(&ctx, "TODO: Help message").await;
     Ok(())
 }
