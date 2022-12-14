@@ -1,0 +1,15 @@
+[package]
+name = "personal"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serenity = { version = "0.11" }
+tokio = { version = "1.23", features = ["rt", "fs", "macros", "rt-multi-thread"] }
+
+ron = { version = "0.8" }
+serde = { version = "1", features = ["derive"] }
+
+lazy_static = { version = "1.4" }
