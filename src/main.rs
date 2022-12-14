@@ -131,6 +131,39 @@ impl EventHandler for Handler {
             hashmap.insert(String::from(id), content);
 
             let _ = msg.reply(&ctx, message).await;
+        } else if msg.content.starts_with("!!delete") {
+            let mut options = msg.content.split(" ");
+            let command = options.next();
+            if command.is_none() || command.unwrap() != "!!delete" {
+                return;
+            }
+
+            // Get id
+            let id = options.next();
+            if id.is_none() {
+                const MESSAGE: &str = "Missing identifier. `Usage: !!delete <id>`";
+                let _ = msg.reply(&ctx, MESSAGE).await;
+                return;
+            }
+
+            let id = id.unwrap();
+
+            // This allows the HASHMAP to free itself after scope
+            let mut hashmap = HASHMAP.lock().await;
+            let value = hashmap.get(id);
+
+            if value.is_none() {
+                const MESSAGE: &str = "Identifier doesn't exist.";
+                dbg!(&MESSAGE);
+                let _ = msg.reply(&ctx, MESSAGE).await;
+                return;
+            }
+
+            let message = format!("Deleted `!!{id}`");
+
+            hashmap.remove(id);
+
+            let _ = msg.reply(&ctx, message).await;
         }
     }
 }
