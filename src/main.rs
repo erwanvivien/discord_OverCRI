@@ -80,7 +80,52 @@ impl EventHandler for Handler {
             }
 
             let content = content.join(" ");
-            let message = format!("Mapped {id} to `{content}`. You can use `!!{id}`");
+            let message = format!("Mapped `!!{id}` to `{content}`. You can use `!!{id}`");
+
+            let mut hashmap = HASHMAP.lock().await;
+            hashmap.insert(String::from(id), content);
+
+            let _ = msg.reply(&ctx, message).await;
+        } else if msg.content.starts_with("!!remap") {
+            let mut options = msg.content.split(" ");
+            let command = options.next();
+            if command.is_none() || command.unwrap() != "!!remap" {
+                return;
+            }
+
+            // Get id
+            let id = options.next();
+            if id.is_none() {
+                const MESSAGE: &str = "Missing identifier. `Usage: !!remap <id> <content>`";
+                let _ = msg.reply(&ctx, MESSAGE).await;
+                return;
+            }
+
+            let id = id.unwrap();
+
+            // This allows the HASHMAP to free itself after scope
+            {
+                let hashmap = HASHMAP.lock().await;
+                let value = hashmap.get(id);
+
+                if value.is_none() {
+                    const MESSAGE: &str = "Identifier doesn't exist. `Usage: !!map <id> <content>`";
+                    dbg!(&MESSAGE);
+                    let _ = msg.reply(&ctx, MESSAGE).await;
+                    return;
+                }
+            }
+
+            let content = options.collect::<Vec<_>>();
+            if content.len() == 0 {
+                const MESSAGE: &str = "Missing content. `Usage: !!remap <id> <content>`";
+                dbg!(&MESSAGE);
+                let _ = msg.reply(&ctx, MESSAGE).await;
+                return;
+            }
+
+            let content = content.join(" ");
+            let message = format!("Remapped `!!{id}` to `{content}`. You can use `!!{id}`");
 
             let mut hashmap = HASHMAP.lock().await;
             hashmap.insert(String::from(id), content);
