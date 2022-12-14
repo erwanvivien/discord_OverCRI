@@ -164,6 +164,29 @@ impl EventHandler for Handler {
             hashmap.remove(id);
 
             let _ = msg.reply(&ctx, message).await;
+        } else {
+            // Handle identifiers
+            let options = msg.content.split("!!");
+
+            let command = options.skip(1).next();
+            if command.is_none() {
+                return;
+            }
+
+            let command = command.unwrap().trim();
+
+            let hashmap = HASHMAP.lock().await;
+            let value = hashmap.get(command);
+
+            match value {
+                Some(value) => {
+                    let _ = msg.reply(&ctx, value).await;
+                }
+                None => {
+                    let message = format!("`!!{command}` does not exist");
+                    let _ = msg.reply(&ctx, message).await;
+                }
+            };
         }
     }
 }
