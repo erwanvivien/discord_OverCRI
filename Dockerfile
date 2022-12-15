@@ -1,18 +1,25 @@
-FROM python:latest
+FROM rust:latest AS builder
 
 WORKDIR /app
 
-RUN [ "mkdir", "db" ]
-RUN [ "mkdir", "assets" ]
+COPY Cargo.toml .
+COPY Cargo.lock .
+RUN mkdir src && echo "fn main() { println!(\"Debug mode\"); }" > src/main.rs
 
-COPY [ "requirements.txt", "." ]
-RUN [ "pip3", "install", "-r", "requirements.txt" ]
+RUN cargo build --release
 
-COPY [ "src/", "." ]
-COPY [ "token", "." ]
-COPY [ "epita_pass", "." ]
-COPY [ "epita_user", "."]
-COPY [ "./db/CMD_MAP", "." ]
-COPY [ "./assets/____choffix.png", "." ]
+COPY src/* src/
+# This allows cargo to see it as a newer file
+RUN touch src/main.rs
 
-CMD [ "python3", "main.py" ]
+RUN ls .
+RUN ls -laF /app
+RUN ls -laF /app/target/release
+RUN cargo build --release
+
+FROM debian:buster-slim
+
+WORKDIR /app
+COPY --from=builder /app/target/release/overcri /app/overcri
+
+CMD ["/app/overcri"]
