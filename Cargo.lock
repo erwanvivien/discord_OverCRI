@@ -661,6 +661,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "overcri"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "ron",
+ "serde",
+ "serenity",
+ "tokio",
+]
+
+[[package]]
 name = "parking_lot"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -688,17 +699,6 @@ name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
-
-[[package]]
-name = "personal"
-version = "0.1.0"
-dependencies = [
- "lazy_static",
- "ron",
- "serde",
- "serenity",
- "tokio",
-]
 
 [[package]]
 name = "pin-project-lite"
